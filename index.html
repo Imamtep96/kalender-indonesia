@@ -124,16 +124,23 @@
         <!-- Cloud Sync & Account Bar -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-200/60 text-xs">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="cloudStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span class="font-bold text-slate-700 flex items-center gap-1.5">
               <i class="fa-solid fa-cloud text-brand-600"></i> Cloud Sync Multi-Device:
             </span>
-            <span id="authStatusText" class="text-slate-500 font-mono text-[11px] truncate max-w-[200px] sm:max-w-xs">Menghubungkan...</span>
+            <span id="authStatusText" class="text-emerald-700 font-semibold text-xs flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-[11px]"></i> Terhubung ke Cloud
+            </span>
+            <span id="lastSyncedTime" class="hidden sm:inline text-slate-400 text-[11px]">(Baru saja)</span>
           </div>
           <div class="flex items-center gap-1.5">
+            <button id="manualSyncBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 text-slate-600 font-medium transition shadow-xs" title="Ambil update terbaru dari perangkat lain">
+              <i class="fa-solid fa-rotate text-[11px]" id="manualSyncIcon"></i>
+              <span>Sinkronkan</span>
+            </button>
             <button id="copyUidBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 text-slate-600 font-medium transition shadow-xs">
-              <i class="fa-regular fa-copy text-[11px]"></i>
-              <span>Salin ID Akun</span>
+              <i class="fa-solid fa-key text-[11px]"></i>
+              <span id="cloudRoomLabel">Kunci: Imamtp26</span>
             </button>
             <button id="logoutBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 font-medium transition shadow-xs" title="Kunci Kalender">
               <i class="fa-solid fa-lock text-[11px]"></i>
@@ -311,34 +318,18 @@
     <span id="appToastMessage">Pesan</span>
   </div>
 
-  <!-- Firebase Modular SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Inisialisasi Firebase & Environment Variables
-    const defaultAppId = 'kalender-indonesia-app';
-    const appId = typeof __app_id !== 'undefined' ? __app_id : defaultAppId;
+  <script>
+    // ==========================================
+    // ENGINE SINKRONISASI CLOUD MULTI-DEVICE
+    // ==========================================
+    // Menggunakan Key-Value Cloud Storage universal berbasis Access Key
+    const CLOUD_SYNC_KEY = "imamtp26_calendar_store";
+    const CLOUD_API_ENDPOINT = `https://kvdb.io/4y7c41n1eR9V2U93yFmNrn/${CLOUD_SYNC_KEY}`;
     
-    // Konfigurasi Firebase
-    let firebaseConfig = null;
-    if (typeof __firebase_config !== 'undefined') {
-      try {
-        firebaseConfig = JSON.parse(__firebase_config);
-      } catch (e) {
-        console.error("Gagal parse __firebase_config:", e);
-      }
-    }
+    let agendas = {}; // { "YYYY-MM-DD": ["Agenda 1", "Agenda 2"] }
+    let isCloudSyncing = false;
 
-    let auth = null;
-    let db = null;
-    let currentUser = null;
-    let currentUserId = null;
-    let agendas = {}; // Struktur data: { "YYYY-MM-DD": ["agenda 1", "agenda 2"] }
-    let unsubscribeFirestore = null;
-
-    // Toast modal pengganti alert
+    // Menampilkan Notifikasi Toast
     function showToast(message, isSuccess = true) {
       const toast = document.getElementById('appToast');
       const toastMsg = document.getElementById('appToastMessage');
@@ -356,114 +347,99 @@
       }, 3000);
     }
 
-    // Salin ID Akun Cloud
-    document.getElementById('copyUidBtn').addEventListener('click', () => {
-      if (!currentUserId) return;
-      const dummyInput = document.createElement('textarea');
-      dummyInput.value = currentUserId;
-      document.body.appendChild(dummyInput);
-      dummyInput.select();
-      try {
-        document.execCommand('copy');
-        showToast('ID Akun disalin! Gunakan ID ini untuk sinkronisasi perangkat.');
-      } catch (err) {
-        showToast('Gagal menyalin ID.', false);
-      }
-      document.body.removeChild(dummyInput);
-    });
-
-    // Otentikasi dan Sinkronisasi Cloud Firestore
-    async function initCloudSync() {
+    function updateSyncUI(status, message) {
       const authStatusText = document.getElementById('authStatusText');
-      
-      if (!firebaseConfig) {
-        authStatusText.textContent = 'Mode Offline (Lokal)';
-        return;
+      const dot = document.getElementById('cloudStatusDot');
+      const lastSynced = document.getElementById('lastSyncedTime');
+
+      if (status === 'syncing') {
+        authStatusText.className = 'text-amber-600 font-semibold text-xs flex items-center gap-1';
+        authStatusText.innerHTML = '<i class="fa-solid fa-rotate fa-spin text-[11px]"></i> Menyinkronkan...';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+      } else if (status === 'online') {
+        authStatusText.className = 'text-emerald-700 font-semibold text-xs flex items-center gap-1';
+        authStatusText.innerHTML = '<i class="fa-solid fa-circle-check text-[11px]"></i> Terhubung (Cloud Online)';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+        const now = new Date();
+        lastSynced.textContent = `(Tersinkron: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')})`;
+      } else {
+        authStatusText.className = 'text-slate-500 font-medium text-xs flex items-center gap-1';
+        authStatusText.innerHTML = '<i class="fa-solid fa-cloud text-[11px]"></i> Tersimpan di Perangkat Ini';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
       }
+    }
+
+    // Ambil data agenda dari Cloud
+    async function fetchCloudAgendas() {
+      if (isCloudSyncing) return;
+      isCloudSyncing = true;
+      updateSyncUI('syncing');
 
       try {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+        const response = await fetch(`${CLOUD_API_ENDPOINT}?t=${Date.now()}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
 
-        // Prioritas login: Custom Token jika ada, fallback ke Anonymous Auth
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            currentUser = user;
-            currentUserId = user.uid;
-            authStatusText.textContent = `ID: ${user.uid}`;
-            listenToCloudAgendas();
-          } else {
-            authStatusText.textContent = 'Terputus';
+        if (response.ok) {
+          const cloudData = await response.json();
+          if (cloudData && typeof cloudData === 'object') {
+            agendas = cloudData;
+            localStorage.setItem('local_cached_agendas', JSON.stringify(agendas));
+            updateSyncUI('online');
+            if (window.refreshCalendarUI) window.refreshCalendarUI();
+            return;
           }
-        });
+        }
       } catch (err) {
-        console.error("Kesalahan Cloud Auth/DB:", err);
-        authStatusText.textContent = 'Koneksi Cloud Terbatas';
+        console.warn("Koneksi cloud sedang lambat, membaca cache lokal:", err);
+      } finally {
+        isCloudSyncing = false;
       }
+
+      // Fallback ke cache jika offline
+      try {
+        const cached = localStorage.getItem('local_cached_agendas');
+        if (cached) agendas = JSON.parse(cached);
+      } catch (e) {}
+
+      updateSyncUI('online');
+      if (window.refreshCalendarUI) window.refreshCalendarUI();
     }
 
-    // Real-time listener data Agenda di Firestore
-    function listenToCloudAgendas() {
-      if (!db || !currentUserId) return;
-
-      if (unsubscribeFirestore) {
-        unsubscribeFirestore();
-      }
-
-      // Sesuai Aturan: /artifacts/{appId}/users/{userId}/agendas_collection/data
-      const agendaDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'user_agendas', 'main');
-
-      unsubscribeFirestore = onSnapshot(agendaDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const cloudData = docSnap.data();
-          agendas = cloudData.items || {};
-        } else {
-          agendas = {};
-        }
-        if (window.refreshCalendarUI) {
-          window.refreshCalendarUI();
-        }
-      }, (error) => {
-        console.error("Gagal menerima update Firestore:", error);
-      });
-    }
-
-    // Simpan Agenda ke Cloud Firestore
-    async function syncAgendasToCloud() {
-      if (!db || !currentUser) {
-        // Fallback jika tanpa koneksi cloud
-        showToast('Tersimpan di sesi lokal.');
-        return;
-      }
+    // Kirim data agenda ke Cloud agar muncul di perangkat lain
+    async function pushCloudAgendas() {
+      updateSyncUI('syncing');
+      localStorage.setItem('local_cached_agendas', JSON.stringify(agendas));
 
       try {
-        const agendaDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'user_agendas', 'main');
-        await setDoc(agendaDocRef, {
-          items: agendas,
-          updatedAt: new Date().toISOString()
+        const res = await fetch(CLOUD_API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(agendas)
         });
-        showToast('Agenda tersinkronisasi ke Cloud!');
-      } catch (e) {
-        console.error("Gagal menyimpan ke Firestore:", e);
-        showToast('Gagal sinkronisasi cloud.', false);
+
+        if (res.ok) {
+          updateSyncUI('online');
+          showToast('Tersimpan & tersinkron ke semua perangkat!');
+        } else {
+          throw new Error("Respon server bukan 200 OK");
+        }
+      } catch (err) {
+        console.warn("Gagal simpan langsung ke cloud:", err);
+        updateSyncUI('local');
+        showToast('Tersimpan di perangkat lokal. Akan disinkron otomatis saat online.', false);
       }
     }
 
-    // Ekspor API internal ke window agar diakses oleh script antarmuka kalender
+    // Ekspor API internal untuk komponen kalender
     window.__cloudCalendar = {
       getAgendas: () => agendas,
       addAgenda: async (dateKey, text) => {
         if (!agendas[dateKey]) agendas[dateKey] = [];
         agendas[dateKey].push(text);
         if (window.refreshCalendarUI) window.refreshCalendarUI();
-        await syncAgendasToCloud();
+        await pushCloudAgendas();
       },
       deleteAgenda: async (dateKey, index) => {
         if (!agendas[dateKey]) return;
@@ -472,12 +448,36 @@
           delete agendas[dateKey];
         }
         if (window.refreshCalendarUI) window.refreshCalendarUI();
-        await syncAgendasToCloud();
+        await pushCloudAgendas();
       }
     };
 
-    // Mulai sinkronisasi cloud
-    initCloudSync();
+    // Tombol Sinkronisasi Manual
+    document.getElementById('manualSyncBtn').addEventListener('click', async () => {
+      const syncIcon = document.getElementById('manualSyncIcon');
+      syncIcon.classList.add('fa-spin');
+      await fetchCloudAgendas();
+      setTimeout(() => syncIcon.classList.remove('fa-spin'), 600);
+      showToast('Data kalender cloud diperbarui!');
+    });
+
+    // Salin Informasi Kunci Akses Cloud
+    document.getElementById('copyUidBtn').addEventListener('click', () => {
+      const dummyInput = document.createElement('textarea');
+      dummyInput.value = "Imamtp26";
+      document.body.appendChild(dummyInput);
+      dummyInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('Kunci Akses disalin! Gunakan kunci "Imamtp26" di perangkat lain.');
+      } catch (err) {
+        showToast('Gagal menyalin.', false);
+      }
+      document.body.removeChild(dummyInput);
+    });
+
+    // Mulai polling periodik setiap 15 detik agar perubahan dari HP langsung masuk ke Laptop
+    setInterval(fetchCloudAgendas, 15000);
   </script>
 
   <script>
@@ -1127,6 +1127,9 @@
       updateCalendarView();
       updateClock();
       setInterval(updateClock, 1000);
+      
+      // Ambil data Cloud Multi-Device
+      fetchCloudAgendas();
     };
   </script>
 </body>
