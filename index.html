@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalender Indonesia - Hari Libur Nasional & Agenda</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-anim {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-indigo-50/50 to-slate-200 text-slate-800 min-h-screen flex items-center justify-center p-3 sm:p-5 md:p-8">
+
+  <!-- ================= AUTHENTICATION / ACCESS KEY GATEWAY ================= -->
+  <div id="loginOverlay" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+    <div id="loginCard" class="w-full max-w-md bg-white/95 rounded-3xl shadow-2xl border border-white/80 p-6 sm:p-8 flex flex-col items-center text-center backdrop-blur-lg">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shadow-inner mb-4">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Kunci Akses Kalender</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Masukkan kode akses resmi untuk membuka kalender dan catatan cloud</p>
+
+      <form id="loginForm" class="w-full text-left">
+        <label for="accessKeyInput" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Access Key</label>
+        <div class="relative mb-2">
+          <input 
+            type="password" 
+            id="accessKeyInput" 
+            placeholder="Masukkan Access Key..." 
+            autocomplete="current-password"
+            class="w-full pl-4 pr-11 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition"
+            required
+          >
+          <button 
+            type="button" 
+            id="togglePasswordBtn" 
+            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none"
+            aria-label="Lihat kata sandi">
+            <i class="fa-regular fa-eye" id="togglePasswordIcon"></i>
+          </button>
+        </div>
+        
+        <p id="loginErrorMsg" class="text-xs text-red-500 font-semibold mb-4 min-h-[18px] opacity-0 transition-opacity flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Access Key salah! Silakan coba lagi.</span>
+        </p>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition flex items-center justify-center gap-2 text-sm">
+          <span>Buka Kalender</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+      <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400 w-full flex items-center justify-center gap-1">
+        <i class="fa-solid fa-lock text-slate-300"></i>
+        <span>Sesi login tersimpan secara aman di browser ini</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div id="calendarMainContainer" class="w-full max-w-6xl glassmorphism rounded-3xl shadow-2xl border border-white/80 overflow-hidden flex flex-col lg:flex-row transition-all duration-300">
+    
+    <!-- Kolom Kiri: Kalender Grid & Libur Bulan Ini -->
+    <div class="flex-1 p-4 sm:p-6 md:p-8 flex flex-col justify-between">
+      
+      <div>
+        <!-- Cloud Sync & Account Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-200/60 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-cloud text-brand-600"></i> Cloud Sync Multi-Device:
+            </span>
+            <span id="authStatusText" class="text-slate-500 font-mono text-[11px] truncate max-w-[200px] sm:max-w-xs">Menghubungkan...</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="copyUidBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 text-slate-600 font-medium transition shadow-xs">
+              <i class="fa-regular fa-copy text-[11px]"></i>
+              <span>Salin ID Akun</span>
+            </button>
+            <button id="logoutBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 font-medium transition shadow-xs" title="Kunci Kalender">
+              <i class="fa-solid fa-lock text-[11px]"></i>
+              <span>Kunci</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Header Navigasi Kalender -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-100 text-red-600 text-base font-bold shadow-sm">
+                <i class="fa-solid fa-calendar-day"></i>
+              </span>
+              <div class="flex items-center gap-2">
+                <h1 id="monthYearDisplay" class="text-2xl sm:text-3xl font-extrabold text-slate-900 capitalize tracking-tight">
+                  Bulan Tahun
+                </h1>
+                <!-- Dropdown Pemilih Tahun Cepat -->
+                <select id="yearSelector" class="ml-1 text-sm bg-slate-100 border border-slate-200 text-slate-700 font-bold py-1 px-2 rounded-lg cursor-pointer hover:bg-slate-200 transition focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  <!-- Opsi tahun dimasukkan dinamis lewat JS -->
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+              <p class="text-xs sm:text-sm text-slate-500">Kalender resmi dengan Hari Libur Nasional & Cuti Bersama</p>
+              <!-- Badge Status Sinkronisasi API -->
+              <span id="apiStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">
+                <i class="fa-solid fa-circle-notch fa-spin text-[8px]" id="apiStatusIcon"></i>
+                <span id="apiStatusText">Menyinkronkan data...</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Tombol Navigasi Cepat -->
+          <div class="flex items-center gap-2">
+            <button id="todayBtn" class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-brand-500 hover:text-brand-600 text-slate-700 shadow-sm transition active:scale-95 flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate text-xs"></i>
+              Hari Ini
+            </button>
+            <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button id="prevBtn" aria-label="Bulan sebelumnya" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-brand-600 hover:shadow transition active:scale-95">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <button id="nextBtn" aria-label="Bulan berikutnya" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-brand-600 hover:shadow transition active:scale-95">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nama-nama Hari -->
+        <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-xs font-bold uppercase tracking-wider">
+          <div class="text-red-500 font-extrabold bg-red-50/70 py-1.5 rounded-lg">Min</div>
+          <div class="text-slate-500 py-1.5">Sen</div>
+          <div class="text-slate-500 py-1.5">Sel</div>
+          <div class="text-slate-500 py-1.5">Rab</div>
+          <div class="text-slate-500 py-1.5">Kam</div>
+          <div class="text-slate-500 py-1.5">Jum</div>
+          <div class="text-indigo-600 py-1.5">Sab</div>
+        </div>
+
+        <!-- Grid Tanggal -->
+        <div id="calendarDays" class="grid grid-cols-7 gap-1 sm:gap-2 min-h-[300px]">
+          <!-- Sel-sel tanggal akan dimasukkan lewat JS -->
+        </div>
+      </div>
+
+      <!-- Section: Daftar Hari Libur di Bulan Tersebut -->
+      <div class="mt-6 pt-5 border-t border-slate-200/70">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Hari Libur di Bulan Ini</span>
+          </div>
+          <span id="monthlyHolidaysCount" class="text-xs font-semibold px-2 py-0.5 rounded-md bg-red-50 text-red-600 border border-red-200/60">0 Libur</span>
+        </div>
+        <div id="monthlyHolidaysList" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto custom-scroll">
+          <!-- Item daftar libur bulan aktif dimasukkan di sini -->
+        </div>
+      </div>
+
+      <!-- Keterangan Legend & Jam -->
+      <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Tanggal Merah
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Cuti Bersama
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full ring-2 ring-indigo-500 ring-offset-1 inline-block"></span> Hari Ini
+          </span>
+        </div>
+        <span id="currentClock" class="font-mono text-slate-400 font-semibold text-xs">00:00:00 WIB</span>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan: Detail Hari Terpilih & Agenda -->
+    <div class="w-full lg:w-96 bg-slate-50/80 border-t lg:border-t-0 lg:border-l border-slate-200 p-5 sm:p-7 flex flex-col justify-between">
+      
+      <div>
+        <!-- Rincian Tanggal Terpilih -->
+        <div class="pb-4 border-b border-slate-200/80 mb-5">
+          <span class="text-[11px] font-bold text-brand-600 uppercase tracking-wider block mb-1">Informasi Tanggal</span>
+          <h2 id="selectedDateTitle" class="text-xl font-extrabold text-slate-800 leading-tight">
+            Pilih Tanggal
+          </h2>
+          <p id="selectedDateSub" class="text-xs text-slate-500 mt-0.5 font-medium">Keterangan status tanggal</p>
+
+          <!-- Banner Keterangan Hari Libur jika ada -->
+          <div id="holidayBanner" class="hidden mt-3 p-3 rounded-xl border transition-all text-xs flex items-start gap-2.5">
+            <i id="holidayBannerIcon" class="fa-solid fa-flag mt-0.5"></i>
+            <div>
+              <p id="holidayBannerType" class="font-bold uppercase text-[10px] tracking-wide">Hari Libur</p>
+              <p id="holidayBannerText" class="font-semibold text-slate-800 mt-0.5 leading-snug">Keterangan libur di sini</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tambah Agenda / Catatan -->
+        <form id="noteForm" class="mb-5">
+          <label for="noteInput" class="block text-xs font-bold text-slate-700 mb-2">Tambah Catatan / Jadwal (Cloud)</label>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="noteInput" 
+              placeholder="Contoh: Rapat evaluasi jam 14..." 
+              class="flex-1 px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-sm"
+              required
+            >
+            <button 
+              type="submit" 
+              id="submitNoteBtn"
+              class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-brand-500/20 active:scale-95 transition flex items-center justify-center">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+        </form>
+
+        <!-- List Agenda Tanggal Ini -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Catatan Cloud</span>
+            <span id="agendaCount" class="text-xs bg-white text-slate-600 font-bold px-2 py-0.5 rounded-full border border-slate-200 shadow-xs">0</span>
+          </div>
+          
+          <div id="notesList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scroll">
+            <!-- Agenda pribadi dimuat di sini -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tips & Multi Device Notice -->
+      <div class="mt-6 pt-4 border-t border-slate-200/80 text-[11px] text-slate-400 flex flex-col gap-1">
+        <div class="flex items-center gap-2 text-slate-500">
+          <i class="fa-solid fa-shield-halved text-brand-500"></i>
+          <span>Data agenda tersinkronisasi otomatis ke server cloud.</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-500"></i>
+          <span>Hari libur mengacu pada SKB 3 Menteri resmi Indonesia.</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Notification Toast Modal -->
+  <div id="appToast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-medium">
+    <i id="appToastIcon" class="fa-solid fa-circle-info text-brand-400"></i>
+    <span id="appToastMessage">Pesan</span>
+  </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Inisialisasi Firebase & Environment Variables
+    const defaultAppId = 'kalender-indonesia-app';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : defaultAppId;
+    
+    // Konfigurasi Firebase
+    let firebaseConfig = null;
+    if (typeof __firebase_config !== 'undefined') {
+      try {
+        firebaseConfig = JSON.parse(__firebase_config);
+      } catch (e) {
+        console.error("Gagal parse __firebase_config:", e);
+      }
+    }
+
+    let auth = null;
+    let db = null;
+    let currentUser = null;
+    let currentUserId = null;
+    let agendas = {}; // Struktur data: { "YYYY-MM-DD": ["agenda 1", "agenda 2"] }
+    let unsubscribeFirestore = null;
+
+    // Toast modal pengganti alert
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('appToast');
+      const toastMsg = document.getElementById('appToastMessage');
+      const toastIcon = document.getElementById('appToastIcon');
+
+      toastMsg.textContent = message;
+      toastIcon.className = isSuccess ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-exclamation text-amber-400';
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Salin ID Akun Cloud
+    document.getElementById('copyUidBtn').addEventListener('click', () => {
+      if (!currentUserId) return;
+      const dummyInput = document.createElement('textarea');
+      dummyInput.value = currentUserId;
+      document.body.appendChild(dummyInput);
+      dummyInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('ID Akun disalin! Gunakan ID ini untuk sinkronisasi perangkat.');
+      } catch (err) {
+        showToast('Gagal menyalin ID.', false);
+      }
+      document.body.removeChild(dummyInput);
+    });
+
+    // Otentikasi dan Sinkronisasi Cloud Firestore
+    async function initCloudSync() {
+      const authStatusText = document.getElementById('authStatusText');
+      
+      if (!firebaseConfig) {
+        authStatusText.textContent = 'Mode Offline (Lokal)';
+        return;
+      }
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // Prioritas login: Custom Token jika ada, fallback ke Anonymous Auth
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            currentUser = user;
+            currentUserId = user.uid;
+            authStatusText.textContent = `ID: ${user.uid}`;
+            listenToCloudAgendas();
+          } else {
+            authStatusText.textContent = 'Terputus';
+          }
+        });
+      } catch (err) {
+        console.error("Kesalahan Cloud Auth/DB:", err);
+        authStatusText.textContent = 'Koneksi Cloud Terbatas';
+      }
+    }
+
+    // Real-time listener data Agenda di Firestore
+    function listenToCloudAgendas() {
+      if (!db || !currentUserId) return;
+
+      if (unsubscribeFirestore) {
+        unsubscribeFirestore();
+      }
+
+      // Sesuai Aturan: /artifacts/{appId}/users/{userId}/agendas_collection/data
+      const agendaDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'user_agendas', 'main');
+
+      unsubscribeFirestore = onSnapshot(agendaDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          agendas = cloudData.items || {};
+        } else {
+          agendas = {};
+        }
+        if (window.refreshCalendarUI) {
+          window.refreshCalendarUI();
+        }
+      }, (error) => {
+        console.error("Gagal menerima update Firestore:", error);
+      });
+    }
+
+    // Simpan Agenda ke Cloud Firestore
+    async function syncAgendasToCloud() {
+      if (!db || !currentUser) {
+        // Fallback jika tanpa koneksi cloud
+        showToast('Tersimpan di sesi lokal.');
+        return;
+      }
+
+      try {
+        const agendaDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'user_agendas', 'main');
+        await setDoc(agendaDocRef, {
+          items: agendas,
+          updatedAt: new Date().toISOString()
+        });
+        showToast('Agenda tersinkronisasi ke Cloud!');
+      } catch (e) {
+        console.error("Gagal menyimpan ke Firestore:", e);
+        showToast('Gagal sinkronisasi cloud.', false);
+      }
+    }
+
+    // Ekspor API internal ke window agar diakses oleh script antarmuka kalender
+    window.__cloudCalendar = {
+      getAgendas: () => agendas,
+      addAgenda: async (dateKey, text) => {
+        if (!agendas[dateKey]) agendas[dateKey] = [];
+        agendas[dateKey].push(text);
+        if (window.refreshCalendarUI) window.refreshCalendarUI();
+        await syncAgendasToCloud();
+      },
+      deleteAgenda: async (dateKey, index) => {
+        if (!agendas[dateKey]) return;
+        agendas[dateKey].splice(index, 1);
+        if (agendas[dateKey].length === 0) {
+          delete agendas[dateKey];
+        }
+        if (window.refreshCalendarUI) window.refreshCalendarUI();
+        await syncAgendasToCloud();
+      }
+    };
+
+    // Mulai sinkronisasi cloud
+    initCloudSync();
+  </script>
+
+  <script>
+    // ==========================================
+    // SISTEM OTOMATISASI LIBUR NASIONAL & API AUTO-SYNC
+    // ==========================================
+    
+    // Cache memori hari libur per tahun
+    const holidaysCache = {};
+
+    // 1. Algoritma Hari Libur Masehi Tetap (Berlaku otomatis untuk semua tahun 2025 - 2040+)
+    function getFixedHolidays(year) {
+      return {
+        [`${year}-01-01`]: { name: "Tahun Baru Masehi", type: "national" },
+        [`${year}-05-01`]: { name: "Hari Buruh Internasional", type: "national" },
+        [`${year}-06-01`]: { name: "Hari Lahir Pancasila", type: "national" },
+        [`${year}-08-17`]: { name: "Hari Kemerdekaan Republik Indonesia", type: "national" },
+        [`${year}-12-25`]: { name: "Kelahiran Yesus Kristus (Hari Natal)", type: "national" },
+      };
+    }
+
+    // 2. Algoritma Computus (Perhitungan Paskah & Kenaikan otomatis untuk tahun berapapun)
+    function getEasterRelatedHolidays(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31) - 1; // 0-indexed
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+
+      const easterDate = new Date(year, month, day);
+      
+      // Wafat Yesus Kristus: Jumat Agung (2 hari sebelum Paskah)
+      const goodFriday = new Date(easterDate);
+      goodFriday.setDate(easterDate.getDate() - 2);
+
+      // Kenaikan Yesus Kristus (39 hari setelah Paskah)
+      const ascension = new Date(easterDate);
+      ascension.setDate(easterDate.getDate() + 39);
+
+      const toKey = (d) => {
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${d.getFullYear()}-${mm}-${dd}`;
+      };
+
+      return {
+        [toKey(goodFriday)]: { name: "Wafat Yesus Kristus (Jumat Agung)", type: "national" },
+        [toKey(easterDate)]: { name: "Hari Raya Paskah", type: "national" },
+        [toKey(ascension)]: { name: "Kenaikan Yesus Kristus", type: "national" }
+      };
+    }
+
+    // 3. Cadangan Estimasi Data SKB 2025-2028 bila API Offline
+    const PRESET_FALLBACK_DB = {
+      "2025-01-27": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
+      "2025-01-28": { name: "Cuti Bersama Tahun Baru Imlek 2576", type: "joint" },
+      "2025-01-29": { name: "Tahun Baru Imlek 2576 Kongzili", type: "national" },
+      "2025-03-28": { name: "Cuti Bersama Hari Suci Nyepi 1947", type: "joint" },
+      "2025-03-29": { name: "Hari Suci Nyepi Saka 1947", type: "national" },
+      "2025-03-31": { name: "Hari Raya Idul Fitri 1446 H", type: "national" },
+      "2025-04-01": { name: "Hari Raya Idul Fitri 1446 H", type: "national" },
+      "2025-04-02": { name: "Cuti Bersama Idul Fitri 1446 H", type: "joint" },
+      "2025-05-12": { name: "Hari Raya Waisak 2569 BE", type: "national" },
+      "2025-06-06": { name: "Hari Raya Idul Adha 1446 H", type: "national" },
+      "2025-06-27": { name: "1 Muharam 1447 H (Tahun Baru Islam)", type: "national" },
+      "2025-09-05": { name: "Maulid Nabi Muhammad SAW", type: "national" },
+      
+      "2026-01-16": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
+      "2026-02-17": { name: "Tahun Baru Imlek 2577 Kongzili", type: "national" },
+      "2026-03-19": { name: "Hari Suci Nyepi Saka 1948", type: "national" },
+      "2026-03-21": { name: "Hari Raya Idul Fitri 1447 H", type: "national" },
+      "2026-03-22": { name: "Hari Raya Idul Fitri 1447 H", type: "national" },
+      "2026-05-31": { name: "Hari Raya Waisak 2570 BE", type: "national" },
+      "2026-06-16": { name: "1 Muharam 1448 H (Tahun Baru Islam)", type: "national" },
+      "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" },
+
+      "2028-01-25": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
+      "2028-01-26": { name: "Tahun Baru Imlek 2579 Kongzili", type: "national" },
+      "2028-02-27": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
+      "2028-02-28": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
+      "2028-03-26": { name: "Hari Suci Nyepi Saka 1950", type: "national" },
+      "2028-05-05": { name: "Hari Raya Idul Adha 1449 H", type: "national" },
+      "2028-05-09": { name: "Hari Raya Waisak 2572 BE", type: "national" }
+    };
+
+    // Fungsi Fetch Otomatis Hari Libur Setiap Tahun
+    async function fetchHolidaysForYear(year) {
+      // 1. Cek cache memori
+      if (holidaysCache[year]) {
+        return holidaysCache[year];
+      }
+
+      // 2. Cek cache localStorage
+      try {
+        const localData = localStorage.getItem(`holidays_${year}`);
+        if (localData) {
+          holidaysCache[year] = JSON.parse(localData);
+          updateApiStatus('cached', 'Data Tersimpan (Cache)');
+          return holidaysCache[year];
+        }
+      } catch (e) {
+        console.warn("Storage read error", e);
+      }
+
+      updateApiStatus('loading', `Memuat data tahun ${year}...`);
+
+      // Baseline gabungan: Libur Masehi Tetap + Paskah/Kenaikan + Estimasi
+      const baseHolidays = {
+        ...getFixedHolidays(year),
+        ...getEasterRelatedHolidays(year),
+        ...PRESET_FALLBACK_DB
+      };
+
+      try {
+        // Fetch dari Public API Hari Libur Indonesia
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 detik timeout
+
+        const response = await fetch(`https://dayoffapi.vercel.app/api?year=${year}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error("Gagal mengambil data dari API");
+
+        const data = await response.json();
+        const mergedHolidays = { ...baseHolidays };
+
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(item => {
+            const dateStr = item.tanggal; // format: YYYY-MM-DD
+            mergedHolidays[dateStr] = {
+              name: item.keterangan || "Hari Libur",
+              type: item.is_cuti ? "joint" : "national"
+            };
+          });
+
+          holidaysCache[year] = mergedHolidays;
+          try {
+            localStorage.setItem(`holidays_${year}`, JSON.stringify(mergedHolidays));
+          } catch (e) {}
+
+          updateApiStatus('online', `Tersinkronisasi API SKB ${year}`);
+          return mergedHolidays;
+        } else {
+          throw new Error("Data API kosong untuk tahun ini");
+        }
+      } catch (err) {
+        console.warn(`Menggunakan algoritma fallback untuk tahun ${year}:`, err.message);
+        holidaysCache[year] = baseHolidays;
+        updateApiStatus('fallback', `Libur Tetap & Estimasi (${year})`);
+        return baseHolidays;
+      }
+    }
+
+    function updateApiStatus(status, text) {
+      const badge = document.getElementById('apiStatusBadge');
+      const icon = document.getElementById('apiStatusIcon');
+      const txt = document.getElementById('apiStatusText');
+
+      txt.textContent = text;
+      if (status === 'loading') {
+        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700';
+        icon.className = 'fa-solid fa-circle-notch fa-spin text-[8px]';
+      } else if (status === 'online') {
+        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700';
+        icon.className = 'fa-solid fa-cloud-arrow-down text-[8px]';
+      } else if (status === 'cached') {
+        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700';
+        icon.className = 'fa-solid fa-bolt text-[8px]';
+      } else {
+        badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200';
+        icon.className = 'fa-solid fa-calculator text-[8px]';
+      }
+    }
+
+    const months = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+    let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    function getAgendasData() {
+      if (window.__cloudCalendar) {
+        return window.__cloudCalendar.getAgendas();
+      }
+      return {};
+    }
+
+    function formatDateKey(year, month, day) {
+      const m = String(month + 1).padStart(2, '0');
+      const d = String(day).padStart(2, '0');
+      return `${year}-${m}-${d}`;
+    }
+
+    // Elemen DOM
+    const monthYearDisplay = document.getElementById('monthYearDisplay');
+    const yearSelector = document.getElementById('yearSelector');
+    const calendarDays = document.getElementById('calendarDays');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const todayBtn = document.getElementById('todayBtn');
+    const monthlyHolidaysList = document.getElementById('monthlyHolidaysList');
+    const monthlyHolidaysCount = document.getElementById('monthlyHolidaysCount');
+    const selectedDateTitle = document.getElementById('selectedDateTitle');
+    const selectedDateSub = document.getElementById('selectedDateSub');
+    const holidayBanner = document.getElementById('holidayBanner');
+    const holidayBannerText = document.getElementById('holidayBannerText');
+    const holidayBannerType = document.getElementById('holidayBannerType');
+    const holidayBannerIcon = document.getElementById('holidayBannerIcon');
+    const noteForm = document.getElementById('noteForm');
+    const noteInput = document.getElementById('noteInput');
+    const notesList = document.getElementById('notesList');
+    const agendaCount = document.getElementById('agendaCount');
+    const currentClock = document.getElementById('currentClock');
+
+    // Inisialisasi dropdown pemilih tahun (rentang 2024 hingga 2036)
+    function initYearSelector() {
+      yearSelector.innerHTML = '';
+      for (let y = 2024; y <= 2036; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === currentYear) opt.selected = true;
+        yearSelector.appendChild(opt);
+      }
+      yearSelector.addEventListener('change', async (e) => {
+        currentYear = parseInt(e.target.value);
+        await updateCalendarView();
+      });
+    }
+
+    // Render Grid Kalender Async dengan fetch hari libur
+    async function renderCalendar() {
+      monthYearDisplay.textContent = `${months[currentMonth]}`;
+      yearSelector.value = currentYear;
+      calendarDays.innerHTML = '';
+
+      // Dapatkan data libur tahun aktif secara dinamis
+      const holidays = await fetchHolidaysForYear(currentYear);
+
+      const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+      const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+
+      // Tanggal bulan sebelumnya (non-aktif)
+      for (let i = firstDayIndex; i > 0; i--) {
+        const dayNumber = prevLastDate - i + 1;
+        const cell = document.createElement('div');
+        cell.className = 'h-12 sm:h-14 flex items-center justify-center rounded-xl text-slate-300 text-xs sm:text-sm select-none cursor-default font-medium';
+        cell.textContent = dayNumber;
+        calendarDays.appendChild(cell);
+      }
+
+      // Daftar penampung libur pada bulan ini
+      const activeMonthHolidays = [];
+
+      // Tanggal bulan berjalan
+      for (let day = 1; day <= lastDate; day++) {
+        const cellDate = new Date(currentYear, currentMonth, day);
+        const dayOfWeek = cellDate.getDay(); // 0 = Minggu
+        const isSunday = (dayOfWeek === 0);
+        const dateKey = formatDateKey(currentYear, currentMonth, day);
+        const holidayInfo = holidays[dateKey];
+
+        if (holidayInfo) {
+          activeMonthHolidays.push({ day, ...holidayInfo, isSunday });
+        }
+
+        const isToday = 
+          day === today.getDate() && 
+          currentMonth === today.getMonth() && 
+          currentYear === today.getFullYear();
+
+        const isSelected = 
+          day === selectedDate.getDate() && 
+          currentMonth === selectedDate.getMonth() && 
+          currentYear === selectedDate.getFullYear();
+
+        const cloudAgendas = getAgendasData();
+        const hasAgenda = cloudAgendas[dateKey] && cloudAgendas[dateKey].length > 0;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('title', holidayInfo ? holidayInfo.name : `${day} ${months[currentMonth]}`);
+        btn.className = 'group relative h-12 sm:h-14 flex flex-col items-center justify-center rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-150 active:scale-95 border border-transparent';
+
+        // Penataan Style Tanggal
+        if (isSelected) {
+          btn.className += ' bg-brand-600 text-white shadow-md shadow-brand-500/30';
+        } else if (isToday) {
+          btn.className += ' border-2 border-brand-500 bg-brand-50/60 text-brand-700 font-bold';
+        } else if (holidayInfo && holidayInfo.type === 'national') {
+          // Tanggal Merah Libur Nasional
+          btn.className += ' text-red-600 bg-red-50/70 hover:bg-red-100 font-extrabold';
+        } else if (holidayInfo && holidayInfo.type === 'joint') {
+          // Cuti Bersama
+          btn.className += ' text-amber-700 bg-amber-50 hover:bg-amber-100 font-bold';
+        } else if (isSunday) {
+          // Minggu
+          btn.className += ' text-red-600 hover:bg-red-50 font-bold';
+        } else if (dayOfWeek === 6) {
+          // Sabtu
+          btn.className += ' text-indigo-700 hover:bg-indigo-50/60';
+        } else {
+          // Hari Kerja Biasa
+          btn.className += ' text-slate-700 hover:bg-slate-100';
+        }
+
+        // Teks nomor tanggal
+        const textSpan = document.createElement('span');
+        textSpan.textContent = day;
+        btn.appendChild(textSpan);
+
+        // Badge / Dot Indikator (Libur & Agenda)
+        const indicatorContainer = document.createElement('div');
+        indicatorContainer.className = 'flex items-center gap-1 absolute bottom-1.5';
+
+        // Dot libur merah/oranye
+        if (holidayInfo) {
+          const holidayDot = document.createElement('span');
+          holidayDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : (holidayInfo.type === 'national' ? 'bg-red-500' : 'bg-amber-500')}`;
+          indicatorContainer.appendChild(holidayDot);
+        }
+
+        // Dot agenda pribadi hijau
+        if (hasAgenda) {
+          const noteDot = document.createElement('span');
+          noteDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-indigo-200' : 'bg-emerald-500'}`;
+          indicatorContainer.appendChild(noteDot);
+        }
+
+        btn.appendChild(indicatorContainer);
+
+        // Handler Klik Tanggal
+        btn.addEventListener('click', () => {
+          selectedDate = new Date(currentYear, currentMonth, day);
+          updateCalendarView();
+        });
+
+        calendarDays.appendChild(btn);
+      }
+
+      // Slot sisa penutup
+      const totalCells = firstDayIndex + lastDate;
+      const nextDays = (7 - (totalCells % 7)) % 7;
+      for (let j = 1; j <= nextDays; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'h-12 sm:h-14 flex items-center justify-center rounded-xl text-slate-300 text-xs sm:text-sm font-medium select-none cursor-default';
+        cell.textContent = j;
+        calendarDays.appendChild(cell);
+      }
+
+      renderMonthlyHolidays(activeMonthHolidays);
+    }
+
+    // Render List Libur Bulanan di Bawah Kalender
+    function renderMonthlyHolidays(holidays) {
+      monthlyHolidaysList.innerHTML = '';
+      monthlyHolidaysCount.textContent = `${holidays.length} Hari Libur`;
+
+      if (holidays.length === 0) {
+        monthlyHolidaysList.innerHTML = `
+          <p class="text-xs text-slate-400 italic">Tidak ada hari libur nasional atau cuti bersama di bulan ini.</p>
+        `;
+        return;
+      }
+
+      holidays.forEach(h => {
+        const isJoint = h.type === 'joint';
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = `text-left px-2.5 py-1.5 rounded-xl border text-xs flex items-center gap-2 transition active:scale-95 ${
+          isJoint 
+            ? 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100' 
+            : 'bg-red-50 text-red-900 border-red-200 hover:bg-red-100'
+        }`;
+
+        item.innerHTML = `
+          <span class="font-extrabold px-1.5 py-0.5 rounded-md text-[10px] ${
+            isJoint ? 'bg-amber-200 text-amber-900' : 'bg-red-200 text-red-900'
+          }">${h.day} ${months[currentMonth].substring(0, 3)}</span>
+          <span class="truncate font-medium max-w-[200px] sm:max-w-xs">${h.name}</span>
+        `;
+
+        item.addEventListener('click', () => {
+          selectedDate = new Date(currentYear, currentMonth, h.day);
+          updateCalendarView();
+        });
+
+        monthlyHolidaysList.appendChild(item);
+      });
+    }
+
+    // Render Rincian Tanggal & Agenda di Sisi Kanan
+    async function renderSidePanel() {
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      const date = selectedDate.getDate();
+      const dayIndex = selectedDate.getDay();
+      const dateKey = formatDateKey(year, month, date);
+
+      const isSunday = (dayIndex === 0);
+      const holidays = await fetchHolidaysForYear(year);
+      const holidayInfo = holidays[dateKey];
+
+      selectedDateTitle.textContent = `${daysIndo[dayIndex]}, ${date} ${months[month]} ${year}`;
+
+      const isToday = 
+        date === today.getDate() && 
+        month === today.getMonth() && 
+        year === today.getFullYear();
+
+      selectedDateSub.textContent = isToday ? 'Hari Ini' : (isSunday ? 'Akhir Pekan (Minggu)' : 'Hari Kerja');
+
+      // Tampilkan banner jika hari libur atau cuti bersama
+      if (holidayInfo) {
+        holidayBanner.classList.remove('hidden');
+        holidayBannerText.textContent = holidayInfo.name;
+
+        if (holidayInfo.type === 'national') {
+          holidayBanner.className = 'mt-3 p-3 rounded-xl border text-xs flex items-start gap-2.5 bg-red-50 border-red-200 text-red-900';
+          holidayBannerType.textContent = 'Hari Libur Nasional (Tanggal Merah)';
+          holidayBannerType.className = 'font-bold uppercase text-[10px] tracking-wide text-red-700';
+          holidayBannerIcon.className = 'fa-solid fa-calendar-xmark text-red-600 mt-0.5 text-sm';
+        } else {
+          holidayBanner.className = 'mt-3 p-3 rounded-xl border text-xs flex items-start gap-2.5 bg-amber-50 border-amber-200 text-amber-900';
+          holidayBannerType.textContent = 'Cuti Bersama Resmi';
+          holidayBannerType.className = 'font-bold uppercase text-[10px] tracking-wide text-amber-700';
+          holidayBannerIcon.className = 'fa-solid fa-mug-hot text-amber-600 mt-0.5 text-sm';
+        }
+      } else if (isSunday) {
+        holidayBanner.classList.remove('hidden');
+        holidayBanner.className = 'mt-3 p-3 rounded-xl border text-xs flex items-start gap-2.5 bg-rose-50 border-rose-200 text-rose-900';
+        holidayBannerType.textContent = 'Hari Libur Mingguan';
+        holidayBannerType.className = 'font-bold uppercase text-[10px] tracking-wide text-rose-700';
+        holidayBannerText.textContent = 'Hari Minggu - Libur Akhir Pekan';
+        holidayBannerIcon.className = 'fa-solid fa-umbrella-beach text-rose-600 mt-0.5 text-sm';
+      } else {
+        holidayBanner.classList.add('hidden');
+      }
+
+      // Render daftar agenda pada tanggal tersebut
+      const cloudAgendas = getAgendasData();
+      const currentNotes = cloudAgendas[dateKey] || [];
+      agendaCount.textContent = currentNotes.length;
+      notesList.innerHTML = '';
+
+      if (currentNotes.length === 0) {
+        notesList.innerHTML = `
+          <div class="text-center py-6 text-slate-400">
+            <i class="fa-regular fa-calendar-check text-2xl mb-1.5 opacity-50 block"></i>
+            <p class="text-xs">Tidak ada catatan agenda khusus.</p>
+          </div>
+        `;
+        return;
+      }
+
+      currentNotes.forEach((note, idx) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm group hover:border-slate-300 transition';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex items-center gap-2 overflow-hidden';
+
+        const dot = document.createElement('i');
+        dot.className = 'fa-solid fa-circle text-[7px] text-brand-600 flex-shrink-0';
+
+        const text = document.createElement('span');
+        text.className = 'text-xs text-slate-700 font-medium truncate';
+        text.textContent = note;
+
+        contentDiv.appendChild(dot);
+        contentDiv.appendChild(text);
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'text-slate-300 hover:text-red-500 p-1 text-xs transition opacity-70 group-hover:opacity-100';
+        delBtn.setAttribute('title', 'Hapus catatan');
+        delBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+
+        delBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (window.__cloudCalendar) {
+            await window.__cloudCalendar.deleteAgenda(dateKey, idx);
+          }
+        });
+
+        itemEl.appendChild(contentDiv);
+        itemEl.appendChild(delBtn);
+        notesList.appendChild(itemEl);
+      });
+    }
+
+    async function updateCalendarView() {
+      await renderCalendar();
+      await renderSidePanel();
+    }
+
+    // Penambahan Agenda
+    noteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const val = noteInput.value.trim();
+      if (!val) return;
+
+      const dateKey = formatDateKey(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate()
+      );
+
+      if (window.__cloudCalendar) {
+        await window.__cloudCalendar.addAgenda(dateKey, val);
+      }
+      noteInput.value = '';
+    });
+
+    // Hook refresh UI saat ada update dari cloud snapshot
+    window.refreshCalendarUI = async function() {
+      await renderCalendar();
+      await renderSidePanel();
+    };
+
+    // Tombol Navigasi Bulan
+    prevBtn.addEventListener('click', async () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      await updateCalendarView();
+    });
+
+    nextBtn.addEventListener('click', async () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      await updateCalendarView();
+    });
+
+    todayBtn.addEventListener('click', async () => {
+      currentMonth = today.getMonth();
+      currentYear = today.getFullYear();
+      selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      await updateCalendarView();
+    });
+
+    // Jam Digital
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      currentClock.textContent = `${h}:${m}:${s} WIB`;
+    }
+
+    // ==========================================
+    // SISTEM LOGIN & ACCESS KEY GATEWAY
+    // ==========================================
+    const VALID_ACCESS_KEY = "Imamtp26";
+    const AUTH_STORAGE_KEY = "calendar_access_granted";
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginCard = document.getElementById('loginCard');
+    const loginForm = document.getElementById('loginForm');
+    const accessKeyInput = document.getElementById('accessKeyInput');
+    const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+    const loginErrorMsg = document.getElementById('loginErrorMsg');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Cek status autentikasi awal
+    function checkAccessSession() {
+      const isGranted = localStorage.getItem(AUTH_STORAGE_KEY) === "true";
+      if (isGranted) {
+        loginOverlay.classList.add('hidden');
+      } else {
+        loginOverlay.classList.remove('hidden');
+        setTimeout(() => accessKeyInput.focus(), 150);
+      }
+    }
+
+    // Toggle Tampilkan/Sembunyikan Password
+    togglePasswordBtn.addEventListener('click', () => {
+      if (accessKeyInput.type === 'password') {
+        accessKeyInput.type = 'text';
+        togglePasswordIcon.className = 'fa-regular fa-eye-slash';
+      } else {
+        accessKeyInput.type = 'password';
+        togglePasswordIcon.className = 'fa-regular fa-eye';
+      }
+    });
+
+    // Validasi Akses
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const enteredKey = accessKeyInput.value.trim();
+
+      if (enteredKey === VALID_ACCESS_KEY) {
+        loginErrorMsg.classList.add('opacity-0');
+        localStorage.setItem(AUTH_STORAGE_KEY, "true");
+        loginOverlay.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          loginOverlay.classList.add('hidden');
+          loginOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        }, 300);
+        showToast('Akses diterima. Selamat datang!');
+      } else {
+        loginErrorMsg.classList.remove('opacity-0');
+        loginCard.classList.remove('shake-anim');
+        void loginCard.offsetWidth; // Trigger reflow untuk restart CSS animasi
+        loginCard.classList.add('shake-anim');
+        accessKeyInput.select();
+      }
+    });
+
+    // Kunci / Logout
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      accessKeyInput.value = '';
+      loginErrorMsg.classList.add('opacity-0');
+      loginOverlay.classList.remove('hidden');
+      accessKeyInput.focus();
+      showToast('Kalender berhasil dikunci.', false);
+    });
+
+    // Inisialisasi awal saat halaman dimuat
+    window.onload = function() {
+      checkAccessSession();
+      initYearSelector();
+      updateCalendarView();
+      updateClock();
+      setInterval(updateClock, 1000);
+    };
+  </script>
+</body>
+</html>
