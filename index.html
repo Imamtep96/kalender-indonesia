@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Kalender Multi-Device Pro</title>
+  
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+    body {
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-anim {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+  </style>
+</head>
+<body class="bg-slate-100/90 text-slate-800 min-h-screen antialiased flex flex-col justify-between selection:bg-brand-600 selection:text-white">
+
+  <!-- ================= LAYAR GERBANG LOGIN (ACCESS KEY: Imamtp26) ================= -->
+  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+    <div id="loginCard" class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 transition-all text-center relative overflow-hidden">
+      <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+        <i data-lucide="lock" class="w-8 h-8"></i>
+      </div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Kunci Akses Kalender</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Masukkan kode akses untuk sinkronisasi otomatis antar iPhone & Laptop</p>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">Access Key</label>
+          <div class="relative">
+            <input type="password" id="accessKeyInput" placeholder="Masukkan Access Key..." autocomplete="off" required
+              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white pr-12 transition">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-2 touch-target flex items-center justify-center" aria-label="Lihat kata sandi">
+              <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p id="loginErrorMsg" class="text-xs text-rose-500 mt-2 font-medium hidden flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
+            <span>Access Key salah! Silakan coba lagi.</span>
+          </p>
+        </div>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-brand-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm touch-target">
+          <span>Buka Kalender</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+        <span class="font-semibold text-emerald-600 flex items-center gap-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Kunci: Imamtp26
+        </span>
+        <span>Multi-Device Sync</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APLIKASI UTAMA KALENDER ================= -->
+  <div id="appContainer" class="hidden flex-1 flex flex-col">
+    <!-- Header Navigasi Atas -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-brand-600 text-white rounded-2xl flex items-center justify-center shadow-md shadow-brand-500/25 shrink-0">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Kalender Saya</h1>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm animate-pulse"></span>
+              <span id="syncStatusText" class="text-[11px] font-bold text-slate-600">🟢 Cloud Online (Tersambung)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="refreshDataManual()" class="touch-target px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+            <i data-lucide="refresh-cw" id="refreshIcon" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Sinkronkan</span>
+          </button>
+          <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Kunci Kalender">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Konten Dashboard Responsif -->
+    <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
+      
+      <!-- SISI KIRI: KALENDER -->
+      <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-4">
+        <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/90">
+          
+          <!-- Kontrol Navigasi Bulan & Tahun -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 capitalize">November</h2>
+                <select id="yearPicker" onchange="changeYear(this.value)" class="text-base sm:text-lg font-bold bg-slate-100 border border-slate-200 rounded-xl px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                  <!-- Diisi dinamis via JS -->
+                </select>
+              </div>
+              <p id="monthlyHolidaysSubtitle" class="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+                <span>0 Hari Libur Nasional di bulan ini</span>
+              </p>
+            </div>
+
+            <!-- Tombol Navigasi -->
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl self-start sm:self-auto">
+              <button onclick="prevMonth()" aria-label="Bulan Lalu" class="touch-target p-2 hover:bg-white text-slate-700 rounded-xl transition active:scale-90">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <button onclick="goToToday()" class="touch-target px-3 py-1.5 text-xs font-bold text-brand-600 hover:bg-white rounded-xl transition shadow-none hover:shadow-xs">
+                Hari Ini
+              </button>
+              <button onclick="nextMonth()" aria-label="Bulan Berikutnya" class="touch-target p-2 hover:bg-white text-slate-700 rounded-xl transition active:scale-90">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Header Nama Hari -->
+          <div class="grid grid-cols-7 gap-1 text-center font-extrabold text-xs mb-2">
+            <span class="text-rose-600 py-1.5 rounded-xl bg-rose-50/70">Min</span>
+            <span class="text-slate-600 py-1.5">Sen</span>
+            <span class="text-slate-600 py-1.5">Sel</span>
+            <span class="text-slate-600 py-1.5">Rab</span>
+            <span class="text-slate-600 py-1.5">Kam</span>
+            <span class="text-slate-600 py-1.5">Jum</span>
+            <span class="text-indigo-600 py-1.5">Sab</span>
+          </div>
+
+          <!-- Grid Sel Tanggal Kalender -->
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 select-none min-h-[300px]">
+            <!-- Render via JS -->
+          </div>
+        </div>
+
+        <!-- Kartu Banner Hari Libur Nasional (Jika Ada) -->
+        <div id="holidayInfoCard" class="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 flex items-start gap-3 hidden transition-all">
+          <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <i data-lucide="party-popper" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 id="holidayTypeBadge" class="text-[10px] font-black text-rose-700 uppercase tracking-widest">Hari Libur Nasional</h4>
+            <p id="holidayInfoText" class="text-sm font-bold text-rose-950 mt-0.5 leading-snug"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SISI KANAN: PANEL AGENDA & INPUT -->
+      <div class="lg:col-span-5 xl:col-span-4 flex flex-col space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/90 flex-1 flex flex-col justify-between">
+          <div>
+            <!-- Header Rincian Tanggal -->
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div>
+                <span class="text-[10px] font-black uppercase text-brand-600 tracking-wider">Catatan Tanggal</span>
+                <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 mt-0.5 leading-snug">
+                  -
+                </h3>
+              </div>
+              <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-xl text-xs font-bold shrink-0">
+                0 Catatan
+              </span>
+            </div>
+
+            <!-- Formulir Tambah Catatan -->
+            <form onsubmit="handleSaveAgenda(event)" class="mt-4 space-y-2.5 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
+              <div>
+                <input type="text" id="agendaTitleInput" required placeholder="Judul agenda atau kegiatan..."
+                  class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="time" id="agendaTimeInput"
+                  class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <select id="agendaCategoryInput"
+                  class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                  <option value="Kerja">💼 Kerja</option>
+                  <option value="Pribadi">👤 Pribadi</option>
+                  <option value="Penting">⚡ Penting</option>
+                  <option value="Santai">🌴 Santai</option>
+                </select>
+              </div>
+              <button type="submit" id="submitBtn"
+                class="touch-target w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.98] flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Simpan Catatan</span>
+              </button>
+            </form>
+
+            <!-- Daftar Agenda Pada Tanggal Terpilih -->
+            <div class="mt-5">
+              <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-600"></i>
+                <span>Daftar Jadwal</span>
+              </h4>
+              <div id="agendaList" class="space-y-2 max-h-[260px] sm:max-h-[300px] overflow-y-auto custom-scroll pr-1">
+                <!-- Data agenda dimuat via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Status Multi-Device -->
+          <div class="pt-4 border-t border-slate-100 mt-4 text-center">
+            <p class="text-[11px] text-slate-500 font-medium">
+              Tersambung langsung dengan akun <strong class="text-brand-600 font-bold">Imamtp26</strong>
+            </p>
+            <p class="text-[10px] text-slate-400 mt-0.5">
+              Input di laptop otomatis tersimpan & muncul di iPhone tanpa reload.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Feedback -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none backdrop-blur-sm border border-slate-700/60">
+    <i data-lucide="check-circle-2" id="toastIcon" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+    <span id="toastMessage">Pesan</span>
+  </div>
+
+  <!-- ================= FIREBASE REAL-TIME ENGINE (MULTI-DEVICE) ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendar-pro-app';
+    const rawFirebaseConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+
+    let db = null;
+    let auth = null;
+    let isFirestoreReady = false;
+
+    // Failover multi-device channel id aman bebas blokir CORS iOS Safari
+    const CLOUD_SYNC_FALLBACK_URL = "https://kvdb.io/4y7c41n1eR9V2U93yFmNrn/calendar_sync_imamtp26_v2";
+
+    window.CloudDatabase = {
+      init: async function(onDataCallback) {
+        if (rawFirebaseConfig) {
+          try {
+            const config = JSON.parse(rawFirebaseConfig);
+            const app = initializeApp(config);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+
+            if (auth.currentUser) {
+              isFirestoreReady = true;
+              const ref = doc(db, 'artifacts', appId, 'public', 'data', 'agendas', 'Imamtp26');
+              
+              // Real-time onSnapshot listener
+              onSnapshot(ref, (snap) => {
+                if (snap.exists() && snap.data() && snap.data().agendas) {
+                  onDataCallback(snap.data().agendas);
+                }
+              }, (err) => {
+                console.warn("Firestore error, beralih ke Fallback Polling:", err);
+                this.startFallbackPolling(onDataCallback);
+              });
+              return;
+            }
+          } catch (e) {
+            console.warn("Inisialisasi Firestore gagal, beralih ke Fallback Polling:", e);
+          }
+        }
+        this.startFallbackPolling(onDataCallback);
+      },
+
+      startFallbackPolling: function(onDataCallback) {
+        // Polling setiap 3.5 detik untuk sinkronisasi instan antara HP & PC
+        setInterval(async () => {
+          try {
+            const r = await fetch(`${CLOUD_SYNC_FALLBACK_URL}?_t=${Date.now()}`, { cache: 'no-store' });
+            if (r.ok) {
+              const resData = await r.json();
+              if (resData && typeof resData === 'object') {
+                onDataCallback(resData);
+              }
+            }
+          } catch (e) {}
+        }, 3500);
+      },
+
+      save: async function(data) {
+        // 1. Simpan ke Firestore
+        if (isFirestoreReady && db && auth.currentUser) {
+          try {
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'agendas', 'Imamtp26');
+            await setDoc(ref, {
+              agendas: data,
+              updatedAt: new Date().toISOString()
+            });
+          } catch (e) {
+            console.error("Gagal simpan Firestore:", e);
+          }
+        }
+        // 2. Simpan paralel ke REST Endpoint agar iPhone & PC selalu identik
+        try {
+          await fetch(CLOUD_SYNC_FALLBACK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      },
+
+      fetchLatest: async function() {
+        if (isFirestoreReady && db && auth.currentUser) {
+          try {
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'agendas', 'Imamtp26');
+            const snap = await getDoc(ref);
+            if (snap.exists() && snap.data() && snap.data().agendas) {
+              return snap.data().agendas;
+            }
+          } catch (e) {}
+        }
+        try {
+          const r = await fetch(`${CLOUD_SYNC_FALLBACK_URL}?_t=${Date.now()}`, { cache: 'no-store' });
+          if (r.ok) return await r.json();
+        } catch (e) {}
+        return null;
+      }
+    };
+
+    window.dispatchEvent(new Event('CloudEngineReady'));
+  </script>
+
+  <!-- ================= LOGIKA UTAMA & UI ================= -->
+  <script>
+    const ACCESS_KEY_VALID = "Imamtp26";
+    const SESSION_STORAGE_KEY = "calendar_auth_session_imamtp";
+
+    // Format tanggal ISO string: YYYY-MM-DD
+    function toDateKey(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    const todayObj = new Date();
+    let currentMonth = todayObj.getMonth();
+    let currentYear = todayObj.getFullYear();
+    // Default tanggal terpilih HARUS selalu sama dengan tanggal hari ini saat awal dibuka
+    let selectedDateStr = toDateKey(todayObj);
+
+    let agendas = {}; // { 'YYYY-MM-DD': [ { id, title, time, category, done } ] }
+    let holidaysCache = {};
+
+    const monthsIndo = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    // Perhitungan Hari Libur Nasional Otomatis (Termasuk 2026, 2027, 2028+)
+    function getHolidays(year) {
+      if (holidaysCache[year]) return holidaysCache[year];
+
+      const fixed = {
+        [`${year}-01-01`]: { name: "Tahun Baru Masehi", type: "national" },
+        [`${year}-05-01`]: { name: "Hari Buruh Internasional", type: "national" },
+        [`${year}-06-01`]: { name: "Hari Lahir Pancasila", type: "national" },
+        [`${year}-08-17`]: { name: "Hari Kemerdekaan RI (HUT RI)", type: "national" },
+        [`${year}-12-25`]: { name: "Hari Raya Natal", type: "national" },
+        [`${year}-12-26`]: { name: "Cuti Bersama Hari Raya Natal", type: "joint" }
+      };
+
+      // Lookup hari libur keagamaan
+      const religiousLookup = {
+        // 2026
+        "2026-01-16": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
+        "2026-02-17": { name: "Tahun Baru Imlek 2577 Kongzili", type: "national" },
+        "2026-03-19": { name: "Hari Suci Nyepi Saka 1948", type: "national" },
+        "2026-03-20": { name: "Hari Raya Idul Fitri 1447 H", type: "national" },
+        "2026-03-21": { name: "Hari Raya Idul Fitri 1447 H", type: "national" },
+        "2026-03-22": { name: "Cuti Bersama Idul Fitri 1447 H", type: "joint" },
+        "2026-04-03": { name: "Wafat Yesus Kristus (Jumat Agung)", type: "national" },
+        "2026-05-14": { name: "Kenaikan Yesus Kristus", type: "national" },
+        "2026-05-31": { name: "Hari Raya Waisak 2570 BE", type: "national" },
+        "2026-06-16": { name: "Tahun Baru Islam 1448 H", type: "national" },
+        "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" },
+        // 2027
+        "2027-01-01": { name: "Tahun Baru Masehi", type: "national" },
+        "2027-02-06": { name: "Tahun Baru Imlek 2578", type: "national" },
+        "2027-03-10": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
+        "2027-03-11": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
+        "2027-05-20": { name: "Hari Raya Waisak 2571 BE", type: "national" },
+        // 2028
+        "2028-01-25": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
+        "2028-01-26": { name: "Tahun Baru Imlek 2579 Kongzili", type: "national" },
+        "2028-02-27": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
+        "2028-02-28": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
+        "2028-03-26": { name: "Hari Suci Nyepi Saka 1950", type: "national" },
+        "2028-05-05": { name: "Hari Raya Idul Adha 1449 H", type: "national" }
+      };
+
+      holidaysCache[year] = { ...fixed, ...religiousLookup };
+      return holidaysCache[year];
+    }
+
+    // Inisialisasi Elemen & Tahun
+    function initYearSelector() {
+      const picker = document.getElementById("yearPicker");
+      picker.innerHTML = "";
+      for (let y = 2024; y <= 2035; y++) {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        if (y === currentYear) opt.selected = true;
+        picker.appendChild(opt);
+      }
+    }
+
+    function changeYear(val) {
+      currentYear = parseInt(val);
+      renderCalendar();
+      updateSelectedDateUI();
+    }
+
+    // Render Grid Kalender
+    function renderCalendar() {
+      const monthDisplay = document.getElementById("currentMonthDisplay");
+      const yearPicker = document.getElementById("yearPicker");
+      const calendarGrid = document.getElementById("calendarGrid");
+      const subtitle = document.getElementById("monthlyHolidaysSubtitle");
+
+      monthDisplay.textContent = monthsIndo[currentMonth];
+      yearPicker.value = currentYear;
+      calendarGrid.innerHTML = "";
+
+      const holidays = getHolidays(currentYear);
+      const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+      const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const prevTotalDays = new Date(currentYear, currentMonth, 0).getDate();
+
+      // Hari bulan sebelumnya (warna pudar)
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const d = prevTotalDays - i;
+        const cell = document.createElement("div");
+        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 font-medium text-xs sm:text-sm select-none";
+        cell.textContent = d;
+        calendarGrid.appendChild(cell);
+      }
+
+      let countMonthlyHolidays = 0;
+      const todayStr = toDateKey(todayObj);
+
+      // Tanggal dalam bulan ini
+      for (let day = 1; day <= totalDays; day++) {
+        const cellDate = new Date(currentYear, currentMonth, day);
+        const dateKey = toDateKey(cellDate);
+        const dayOfWeek = cellDate.getDay();
+        const isSunday = (dayOfWeek === 0);
+        const holiday = holidays[dateKey];
+        if (holiday) countMonthlyHolidays++;
+
+        const isToday = (dateKey === todayStr);
+        const isSelected = (dateKey === selectedDateStr);
+        const dayAgendas = agendas[dateKey] || [];
+        const hasAgenda = dayAgendas.length > 0;
+
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.onclick = () => selectDate(dateKey);
+
+        let cellClasses = "touch-target relative flex flex-col items-center justify-center p-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition duration-150 active:scale-95 border ";
+
+        if (isSelected) {
+          cellClasses += "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/30 z-10 font-black";
+        } else if (isToday) {
+          cellClasses += "bg-brand-50 border-2 border-brand-500 text-brand-700 font-extrabold";
+        } else if (holiday && holiday.type === "national") {
+          cellClasses += "text-rose-600 bg-rose-50/70 border-rose-100 hover:bg-rose-100 font-extrabold";
+        } else if (holiday && holiday.type === "joint") {
+          cellClasses += "text-amber-700 bg-amber-50/70 border-amber-100 hover:bg-amber-100 font-bold";
+        } else if (isSunday) {
+          cellClasses += "text-rose-600 border-transparent hover:bg-rose-50 font-bold";
+        } else if (dayOfWeek === 6) {
+          cellClasses += "text-indigo-600 border-transparent hover:bg-indigo-50 font-bold";
+        } else {
+          cellClasses += "text-slate-700 border-transparent hover:bg-slate-100 font-semibold";
+        }
+
+        cell.className = cellClasses;
+        cell.innerHTML = `<span>${day}</span>`;
+
+        // Titik indikator
+        const dotContainer = document.createElement("div");
+        dotContainer.className = "flex items-center gap-1 mt-0.5 absolute bottom-1";
+
+        if (holiday) {
+          const hDot = document.createElement("span");
+          hDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-rose-200' : 'bg-rose-500'}`;
+          dotContainer.appendChild(hDot);
+        }
+
+        if (hasAgenda) {
+          const aDot = document.createElement("span");
+          aDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-emerald-500'}`;
+          dotContainer.appendChild(aDot);
+        }
+
+        cell.appendChild(dotContainer);
+        calendarGrid.appendChild(cell);
+      }
+
+      // Sisa sel bulan berikutnya
+      const remainder = (7 - ((firstDayIndex + totalDays) % 7)) % 7;
+      for (let next = 1; next <= remainder; next++) {
+        const cell = document.createElement("div");
+        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 font-medium text-xs sm:text-sm select-none";
+        cell.textContent = next;
+        calendarGrid.appendChild(cell);
+      }
+
+      subtitle.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+        <span>${countMonthlyHolidays} Hari Libur Nasional & Cuti di bulan ini</span>
+      `;
+    }
+
+    // Klik Tanggal
+    function selectDate(dateKey) {
+      selectedDateStr = dateKey;
+      const parts = dateKey.split('-');
+      currentYear = parseInt(parts[0]);
+      currentMonth = parseInt(parts[1]) - 1;
+      renderCalendar();
+      updateSelectedDateUI();
+      renderAgendaList();
+    }
+
+    function prevMonth() {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    }
+
+    function goToToday() {
+      currentMonth = todayObj.getMonth();
+      currentYear = todayObj.getFullYear();
+      selectDate(toDateKey(todayObj));
+    }
+
+    // Update Panel Detail Tanggal
+    function updateSelectedDateUI() {
+      const parts = selectedDateStr.split('-');
+      const y = parseInt(parts[0]);
+      const m = parseInt(parts[1]) - 1;
+      const d = parseInt(parts[2]);
+      const targetDate = new Date(y, m, d);
+
+      const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const dayName = days[targetDate.getDay()];
+
+      document.getElementById("selectedDateDisplay").textContent = `${dayName}, ${d} ${monthsIndo[m]} ${y}`;
+
+      // Periksa Hari Libur
+      const holidays = getHolidays(y);
+      const holiday = holidays[selectedDateStr];
+      const holidayCard = document.getElementById("holidayInfoCard");
+      const holidayText = document.getElementById("holidayInfoText");
+      const holidayBadge = document.getElementById("holidayTypeBadge");
+
+      if (holiday) {
+        holidayCard.classList.remove("hidden");
+        holidayText.textContent = holiday.name;
+        holidayBadge.textContent = holiday.type === "national" ? "Hari Libur Nasional" : "Cuti Bersama Resmi";
+      } else {
+        holidayCard.classList.add("hidden");
+      }
+    }
+
+    // Tambah Agenda
+    async function handleSaveAgenda(e) {
+      e.preventDefault();
+      const titleInput = document.getElementById("agendaTitleInput");
+      const timeInput = document.getElementById("agendaTimeInput");
+      const catInput = document.getElementById("agendaCategoryInput");
+
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      const newItem = {
+        id: Date.now().toString(),
+        title: title,
+        time: timeInput.value || "--:--",
+        category: catInput.value,
+        done: false
+      };
+
+      if (!agendas[selectedDateStr]) {
+        agendas[selectedDateStr] = [];
+      }
+
+      agendas[selectedDateStr].push(newItem);
+      titleInput.value = "";
+      timeInput.value = "";
+
+      renderCalendar();
+      renderAgendaList();
+
+      // Simpan ke Cloud
+      if (window.CloudDatabase) {
+        await window.CloudDatabase.save(agendas);
+        showToast("Catatan tersimpan! Tersinkron ke iPhone & Laptop.");
+      }
+    }
+
+    async function toggleDone(id) {
+      if (!agendas[selectedDateStr]) return;
+      const item = agendas[selectedDateStr].find(x => x.id === id);
+      if (item) {
+        item.done = !item.done;
+        renderAgendaList();
+        if (window.CloudDatabase) await window.CloudDatabase.save(agendas);
+        showToast("Status diperbarui di semua perangkat!");
+      }
+    }
+
+    async function deleteAgenda(id) {
+      if (!agendas[selectedDateStr]) return;
+      agendas[selectedDateStr] = agendas[selectedDateStr].filter(x => x.id !== id);
+      if (agendas[selectedDateStr].length === 0) {
+        delete agendas[selectedDateStr];
+      }
+      renderCalendar();
+      renderAgendaList();
+      if (window.CloudDatabase) await window.CloudDatabase.save(agendas);
+      showToast("Agenda berhasil dihapus.");
+    }
+
+    function renderAgendaList() {
+      const listContainer = document.getElementById("agendaList");
+      const badge = document.getElementById("agendaCountBadge");
+      const currentList = agendas[selectedDateStr] || [];
+
+      badge.textContent = `${currentList.length} Catatan`;
+      listContainer.innerHTML = "";
+
+      if (currentList.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-6 text-center text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+            <i data-lucide="calendar-x" class="w-6 h-6 mx-auto mb-2 text-slate-300"></i>
+            <p class="text-xs font-semibold">Belum ada agenda pada tanggal ini</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const catBadges = {
+        'Kerja': 'bg-blue-50 text-blue-700 border-blue-200',
+        'Pribadi': 'bg-purple-50 text-purple-700 border-purple-200',
+        'Penting': 'bg-rose-50 text-rose-700 border-rose-200',
+        'Santai': 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      };
+
+      currentList.forEach(item => {
+        const itemEl = document.createElement("div");
+        const bStyle = catBadges[item.category] || 'bg-slate-100 text-slate-700 border-slate-200';
+        itemEl.className = `flex items-center justify-between p-3 rounded-2xl border transition ${item.done ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-brand-300 shadow-xs'}`;
+        
+        itemEl.innerHTML = `
+          <div class="flex items-center gap-2.5 overflow-hidden flex-1">
+            <button type="button" onclick="toggleDone('${item.id}')" class="w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${item.done ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 hover:border-brand-500'}">
+              ${item.done ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ''}
+            </button>
+            <div class="truncate flex-1">
+              <p class="text-xs sm:text-sm font-bold text-slate-800 truncate ${item.done ? 'line-through text-slate-400' : ''}">${item.title}</p>
+              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-0.5">
+                <span>⏰ ${item.time}</span>
+                <span>•</span>
+                <span class="px-1.5 py-0.2 rounded-md border font-bold ${bStyle}">${item.category}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="deleteAgenda('${item.id}')" class="p-2 touch-target text-slate-300 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition shrink-0 ml-1.5 flex items-center justify-center" title="Hapus">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+        listContainer.appendChild(itemEl);
+      });
+
+      lucide.createIcons();
+    }
+
+    // Refresh Manual
+    async function refreshDataManual() {
+      const icon = document.getElementById("refreshIcon");
+      icon.classList.add("animate-spin");
+      if (window.CloudDatabase) {
+        const fresh = await window.CloudDatabase.fetchLatest();
+        if (fresh && typeof fresh === "object") {
+          agendas = fresh;
+          renderCalendar();
+          renderAgendaList();
+        }
+      }
+      setTimeout(() => {
+        icon.classList.remove("animate-spin");
+        showToast("Sinkronisasi terbaru telah dimuat!");
+      }, 500);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toastMessage").textContent = msg;
+      toast.classList.remove("translate-y-20", "opacity-0");
+      setTimeout(() => {
+        toast.classList.add("translate-y-20", "opacity-0");
+      }, 3000);
+    }
+
+    // Autentikasi Access Key Imamtp26
+    function handleLogin(e) {
+      e.preventDefault();
+      const input = document.getElementById("accessKeyInput");
+      const err = document.getElementById("loginErrorMsg");
+      const card = document.getElementById("loginCard");
+
+      if (input.value.trim() === ACCESS_KEY_VALID) {
+        localStorage.setItem(SESSION_STORAGE_KEY, "true");
+        err.classList.add("hidden");
+        unlockApp();
+      } else {
+        err.classList.remove("hidden");
+        card.classList.remove("shake-anim");
+        void card.offsetWidth;
+        card.classList.add("shake-anim");
+        input.select();
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById("accessKeyInput");
+      const icon = document.getElementById("eyeIcon");
+      if (input.type === "password") {
+        input.type = "text";
+        icon.setAttribute("data-lucide", "eye-off");
+      } else {
+        input.type = "password";
+        icon.setAttribute("data-lucide", "eye");
+      }
+      lucide.createIcons();
+    }
+
+    function unlockApp() {
+      document.getElementById("loginOverlay").classList.add("hidden");
+      document.getElementById("appContainer").classList.remove("hidden");
+      lucide.createIcons();
+      renderCalendar();
+      updateSelectedDateUI();
+      renderAgendaList();
+    }
+
+    function lockApp() {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+      location.reload();
+    }
+
+    // Hubungkan Event Cloud Engine
+    window.addEventListener('CloudEngineReady', async () => {
+      // 1. Muat data awal
+      const initialData = await window.CloudDatabase.fetchLatest();
+      if (initialData && typeof initialData === 'object') {
+        agendas = initialData;
+        renderCalendar();
+        renderAgendaList();
+      }
+
+      // 2. Pasang real-time listener otomatis
+      window.CloudDatabase.init((cloudAgendas) => {
+        if (JSON.stringify(agendas) !== JSON.stringify(cloudAgendas)) {
+          agendas = cloudAgendas;
+          renderCalendar();
+          renderAgendaList();
+          showToast("Jadwal tersinkron otomatis dari perangkat lain!");
+        }
+      });
+    });
+
+    // Inisialisasi Saat Dokumen Siap
+    document.addEventListener("DOMContentLoaded", () => {
+      initYearSelector();
+      lucide.createIcons();
+
+      // Pastikan tanggal yang aktif adalah hari ini saat awal dibuka
+      selectedDateStr = toDateKey(todayObj);
+
+      if (localStorage.getItem(SESSION_STORAGE_KEY) === "true") {
+        unlockApp();
+      }
+    });
+  </script>
+</body>
+</html>
