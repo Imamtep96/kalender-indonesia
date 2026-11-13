@@ -258,12 +258,14 @@
   <!-- ================= LOGIKA UTAMA & NEON CLOUD ENGINE ================= -->
   <script>
     const API_ENDPOINT = "/api/agendas";
+    const HOLIDAYS_API_ENDPOINT = "https://api-harilibur.vercel.app/api";
     const SESSION_KEY_STORAGE = "calendar_neon_access_key";
 
     let activeAccessKey = "";
     let agendas = {}; // Data murni dari database Neon (tanpa localStorage)
     let editingAgendaId = null;
     let holidaysCache = {};
+    let fetchingHolidayYears = {};
     let isSyncing = false;
     let pollingInterval = null;
 
@@ -367,9 +369,7 @@
       "Juli", "Agustus", "September", "Oktober", "November", "Desember"
     ];
 
-    function getHolidays(year) {
-      if (holidaysCache[year]) return holidaysCache[year];
-
+    function getFallbackHolidays(year) {
       const fixed = {
         [`${year}-01-01`]: { name: "Tahun Baru Masehi", type: "national" },
         [`${year}-05-01`]: { name: "Hari Buruh Internasional", type: "national" },
@@ -390,22 +390,55 @@
         "2026-05-14": { name: "Kenaikan Yesus Kristus", type: "national" },
         "2026-05-31": { name: "Hari Raya Waisak 2570 BE", type: "national" },
         "2026-06-16": { name: "Tahun Baru Islam 1448 H", type: "national" },
-        "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" },
-        "2027-01-01": { name: "Tahun Baru Masehi", type: "national" },
-        "2027-02-06": { name: "Tahun Baru Imlek 2578", type: "national" },
-        "2027-03-10": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
-        "2027-03-11": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
-        "2027-05-20": { name: "Hari Raya Waisak 2571 BE", type: "national" },
-        "2028-01-25": { name: "Isra Mikraj Nabi Muhammad SAW", type: "national" },
-        "2028-01-26": { name: "Tahun Baru Imlek 2579 Kongzili", type: "national" },
-        "2028-02-27": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
-        "2028-02-28": { name: "Hari Raya Idul Fitri 1449 H", type: "national" },
-        "2028-03-26": { name: "Hari Suci Nyepi Saka 1950", type: "national" },
-        "2028-05-05": { name: "Hari Raya Idul Adha 1449 H", type: "national" }
+        "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" }
       };
 
-      holidaysCache[year] = { ...fixed, ...religiousLookup };
-      return holidaysCache[year];
+      return { ...fixed, ...religiousLookup };
+    }
+
+    async function loadHolidaysFromAPI(year) {
+      if (holidaysCache[year] || fetchingHolidayYears[year]) return;
+      fetchingHolidayYears[year] = true;
+
+      try {
+        const res = await fetch(`${HOLIDAYS_API_ENDPOINT}?year=${year}`);
+        if (!res.ok) throw new Error("Gagal mengambil API hari libur");
+
+        const data = await res.json();
+        const mappedHolidays = {};
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (!item.holiday_date || !item.holiday_name) return;
+            // Normalisasi format YYYY-MM-DD (mengantisipasi tanggal seperti 2026-1-1)
+            const parts = item.holiday_date.split('-');
+            if (parts.length !== 3) return;
+            const normalizedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+
+            const isJoint = /cuti bersama/i.test(item.holiday_name) || item.is_national_holiday === false;
+            mappedHolidays[normalizedDate] = {
+              name: item.holiday_name,
+              type: isJoint ? "joint" : "national"
+            };
+          });
+        }
+
+        if (Object.keys(mappedHolidays).length > 0) {
+          holidaysCache[year] = mappedHolidays;
+          if (currentYear === year) renderCalendar();
+          if (selectedDateStr.startsWith(`${year}-`)) updateSelectedDateUI();
+        }
+      } catch (err) {
+        console.warn(`Menggunakan data cadangan hari libur tahun ${year}:`, err);
+      } finally {
+        delete fetchingHolidayYears[year];
+      }
+    }
+
+    function getHolidays(year) {
+      if (holidaysCache[year]) return holidaysCache[year];
+      loadHolidaysFromAPI(year);
+      return getFallbackHolidays(year);
     }
 
     function initYearSelector() {
