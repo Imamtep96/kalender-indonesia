@@ -111,17 +111,10 @@
           </div>
           <div>
             <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Kalender Saya</h1>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span id="syncIndicatorText" class="text-[11px] font-semibold text-slate-500">Terhubung ke Cloud Neon</span>
-            </div>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <button onclick="fetchCloudAgendas(true)" class="touch-target p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition" title="Refresh Data Cloud">
-            <i data-lucide="refresh-cw" id="refreshIcon" class="w-4 h-4"></i>
-          </button>
           <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Kunci Kalender">
             <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
