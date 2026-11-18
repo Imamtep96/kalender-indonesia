@@ -159,11 +159,12 @@
           <!-- Kontrol Navigasi Bulan & Tahun -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-2.5 flex-wrap">
                 <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 capitalize tracking-tight">November</h2>
                 <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 rounded-xl px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
                 </select>
               </div>
+              <p id="hijriMonthSubtitle" class="text-[11px] font-bold text-emerald-700 mt-1"></p>
             </div>
 
             <!-- Tombol Navigasi -->
@@ -231,10 +232,11 @@
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 flex-1 flex flex-col justify-between">
           <div>
             <!-- Header Rincian Tanggal -->
-            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 gap-2">
               <div>
                 <span class="text-[10px] font-black uppercase text-brand-600 tracking-widest">Catatan Tanggal</span>
                 <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 mt-0.5 leading-snug">-</h3>
+                <p id="selectedJavaneseHijriDisplay" class="text-[11px] font-bold text-amber-700 mt-0.5 leading-snug">-</p>
               </div>
               <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-xl text-xs font-extrabold shrink-0">
                 0 Catatan
@@ -329,6 +331,64 @@
     let fetchingHolidayYears = {};
     let isSyncing = false;
     let pollingInterval = null;
+
+    // ================= PASARAN JAWA & TANGGAL HIJRIAH =================
+    const PASARAN_JAWA = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
+    // Anchor: 1 Januari 2024 = Senin Pahing (index 1)
+    const PASARAN_ANCHOR_UTC = Date.UTC(2024, 0, 1);
+    const PASARAN_ANCHOR_INDEX = 1;
+
+    function getPasaranJawa(dateObj) {
+      const targetUTC = Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+      const diffDays = Math.round((targetUTC - PASARAN_ANCHOR_UTC) / 86400000);
+      const idx = ((PASARAN_ANCHOR_INDEX + diffDays) % 5 + 5) % 5;
+      return PASARAN_JAWA[idx];
+    }
+
+    const hijriFormatters = (() => {
+      const calendars = ["islamic-umalqura", "islamic-civil", "islamic"];
+      for (const cal of calendars) {
+        try {
+          const fullFmt = new Intl.DateTimeFormat(`id-ID-u-ca-${cal}`, {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          });
+          const dayMonthFmt = new Intl.DateTimeFormat(`id-ID-u-ca-${cal}`, {
+            day: "numeric",
+            month: "short"
+          });
+          const monthYearFmt = new Intl.DateTimeFormat(`id-ID-u-ca-${cal}`, {
+            month: "long",
+            year: "numeric"
+          });
+          // Test formatting
+          fullFmt.format(new Date(2026, 10, 19));
+          return { fullFmt, dayMonthFmt, monthYearFmt };
+        } catch (e) {
+          continue;
+        }
+      }
+      return null;
+    })();
+
+    function getHijriInfo(dateObj) {
+      if (!hijriFormatters) return { day: "", shortLabel: "", fullLabel: "" };
+      const fullLabel = hijriFormatters.fullFmt.format(dateObj);
+      const shortLabel = hijriFormatters.dayMonthFmt.format(dateObj);
+      const parts = hijriFormatters.dayMonthFmt.formatToParts ? hijriFormatters.dayMonthFmt.formatToParts(dateObj) : [];
+      const dayPart = parts.find(p => p.type === "day");
+      const day = dayPart ? dayPart.value : shortLabel.split(" ")[0];
+      return { day, shortLabel, fullLabel };
+    }
+
+    function getHijriMonthSpanLabel(year, month) {
+      if (!hijriFormatters) return "";
+      const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
+      return startH === endH ? `${startH} H` : `${startH} – ${endH} H`;
+    }
 
     function setSyncStatus(status, text) {
       const dot = document.getElementById("syncIndicatorDot");
@@ -645,6 +705,11 @@
           : "bg-amber-100 text-amber-700 border-amber-200";
         const badgeLabel = h.type === "national" ? "Libur Nasional" : "Cuti Bersama";
 
+        const [hy, hm, hd] = h.dateKey.split('-').map(Number);
+        const hDateObj = new Date(hy, hm - 1, hd);
+        const hPasaran = getPasaranJawa(hDateObj);
+        const hHijri = getHijriInfo(hDateObj);
+
         item.innerHTML = `
           <div class="flex items-center gap-2.5 overflow-hidden">
             <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 font-black text-slate-800 text-xs shadow-xs">
@@ -652,7 +717,7 @@
             </div>
             <div class="truncate">
               <p class="text-xs font-bold text-slate-800 truncate">${h.name}</p>
-              <p class="text-[10px] text-slate-400 font-semibold">${monthsIndo[currentMonth]} ${currentYear}</p>
+              <p class="text-[10px] text-slate-400 font-semibold truncate">${monthsIndo[currentMonth]} ${currentYear} • ${hPasaran}${hHijri.shortLabel ? ` • ${hHijri.shortLabel} H` : ''}</p>
             </div>
           </div>
           <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-lg border shrink-0 ${badgeClass}">${badgeLabel}</span>
@@ -665,9 +730,13 @@
       const monthDisplay = document.getElementById("currentMonthDisplay");
       const yearPicker = document.getElementById("yearPicker");
       const calendarGrid = document.getElementById("calendarGrid");
+      const hijriSub = document.getElementById("hijriMonthSubtitle");
 
       monthDisplay.textContent = monthsIndo[currentMonth];
       yearPicker.value = currentYear;
+      if (hijriSub) {
+        hijriSub.textContent = getHijriMonthSpanLabel(currentYear, currentMonth);
+      }
       calendarGrid.innerHTML = "";
 
       const holidays = getHolidays(currentYear);
@@ -699,11 +768,14 @@
         const dayAgendas = agendas[dateKey] || [];
         const hasAgenda = dayAgendas.length > 0;
 
+        const pasaran = getPasaranJawa(cellDate);
+        const hijri = getHijriInfo(cellDate);
+
         const cell = document.createElement("button");
         cell.type = "button";
         cell.onclick = () => selectDate(dateKey);
 
-        let cellClasses = "touch-target relative flex flex-col items-center justify-center p-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition duration-150 active:scale-95 border ";
+        let cellClasses = "touch-target relative flex flex-col items-center justify-center py-1.5 px-1 sm:py-2 sm:px-1.5 rounded-2xl text-xs sm:text-sm font-bold transition duration-150 active:scale-95 border ";
 
         if (isSelected) {
           cellClasses += "bg-brand-600 text-white border-brand-600 shadow-brand-glow z-10 font-black";
@@ -719,11 +791,19 @@
           cellClasses += "text-slate-700 border-transparent hover:bg-slate-100 font-semibold";
         }
 
+        const subMetaColor = isSelected
+          ? "text-indigo-100"
+          : (holiday || isSunday ? "text-rose-500/80" : "text-slate-400");
+
         cell.className = cellClasses;
-        cell.innerHTML = `<span>${day}</span>`;
+        cell.innerHTML = `
+          <span class="leading-none">${day}</span>
+          <span class="text-[8px] sm:text-[9px] font-bold leading-tight mt-0.5 truncate max-w-full ${subMetaColor}">${pasaran}</span>
+          ${hijri.day ? `<span class="text-[7px] sm:text-[8px] font-semibold leading-none opacity-85 ${subMetaColor}">${hijri.day}</span>` : ''}
+        `;
 
         const dotContainer = document.createElement("div");
-        dotContainer.className = "flex items-center gap-1 mt-0.5 absolute bottom-1";
+        dotContainer.className = "flex items-center gap-1 absolute top-1 right-1";
 
         if (hasAgenda) {
           const aDot = document.createElement("span");
@@ -790,8 +870,17 @@
 
       const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
       const dayName = days[targetDate.getDay()];
+      const pasaran = getPasaranJawa(targetDate);
+      const hijri = getHijriInfo(targetDate);
 
       document.getElementById("selectedDateDisplay").textContent = `${dayName}, ${d} ${monthsIndo[m]} ${y}`;
+
+      const subDisplay = document.getElementById("selectedJavaneseHijriDisplay");
+      if (subDisplay) {
+        const jawaPart = `${dayName} ${pasaran}`;
+        const hijriPart = hijri.fullLabel ? `${hijri.fullLabel} H` : "";
+        subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
+      }
 
       const holidays = getHolidays(y);
       const holiday = holidays[selectedDateStr];
