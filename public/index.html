@@ -213,13 +213,16 @@
 
         <!-- Box Daftar Hari Libur & Cuti Bulan Ini -->
         <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80">
-          <div class="flex items-center justify-between mb-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="calendar-days" class="w-4 h-4 text-rose-500"></i>
               <span>Daftar Libur & Cuti <span id="currentMonthNameSpan">November</span></span>
             </h4>
-            <!-- Indikator Libur Terdekat -->
-            <span id="nextHolidayCountdown" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80"></span>
+            <!-- Indikator & Hitung Mundur Libur / Agenda Penting Terdekat -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span id="nextHolidayCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80"></span>
+              <span id="nextImportantAgendaCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/80"></span>
+            </div>
           </div>
           <div id="monthlyHolidayList" class="space-y-2 max-h-[180px] overflow-y-auto custom-scroll pr-1">
             <!-- Diisi dinamis via JS -->
@@ -558,9 +561,45 @@
         const diffDays = Math.round((next.date - todayMidnight) / (1000 * 60 * 60 * 24));
         countdownEl.classList.remove("hidden");
         if (diffDays === 0) {
-          countdownEl.textContent = `Hari ini: ${next.name}`;
+          countdownEl.textContent = `Libur Hari Ini: ${next.name}`;
         } else {
-          countdownEl.textContent = `Libur terdekat: ${diffDays} hari lagi`;
+          countdownEl.textContent = `Libur: ${diffDays}h lagi`;
+        }
+      } else {
+        countdownEl.classList.add("hidden");
+      }
+    }
+
+    function updateNextImportantAgendaCountdown() {
+      const countdownEl = document.getElementById("nextImportantAgendaCountdown");
+      if (!countdownEl) return;
+
+      const todayMidnight = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+      let allImportant = [];
+
+      Object.keys(agendas).forEach(dateKey => {
+        const list = agendas[dateKey] || [];
+        list.forEach(item => {
+          if (item.category === "Penting" && !item.done) {
+            const [y, m, d] = dateKey.split('-').map(Number);
+            const itemDate = new Date(y, m - 1, d);
+            if (itemDate >= todayMidnight) {
+              allImportant.push({ date: itemDate, title: item.title, dateKey });
+            }
+          }
+        });
+      });
+
+      allImportant.sort((a, b) => a.date - b.date);
+
+      if (allImportant.length > 0) {
+        const next = allImportant[0];
+        const diffDays = Math.round((next.date - todayMidnight) / (1000 * 60 * 60 * 24));
+        countdownEl.classList.remove("hidden");
+        if (diffDays === 0) {
+          countdownEl.textContent = `⚡ Penting Hari Ini`;
+        } else {
+          countdownEl.textContent = `⚡ Penting: ${diffDays}h lagi`;
         }
       } else {
         countdownEl.classList.add("hidden");
@@ -575,6 +614,7 @@
       nameSpan.textContent = monthsIndo[currentMonth];
       container.innerHTML = "";
       updateNextHolidayCountdown(holidays);
+      updateNextImportantAgendaCountdown();
 
       let monthHolidays = [];
       for (let day = 1; day <= totalDays; day++) {
@@ -894,6 +934,7 @@
       const item = agendas[selectedDateStr].find(x => x.id === id);
       if (item) {
         item.done = !item.done;
+        renderCalendar();
         renderAgendaList();
         const ok = await pushCloudAgendas();
         if (ok) showToast("Status diperbarui di Cloud!");
