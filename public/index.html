@@ -164,10 +164,6 @@
                 <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 rounded-xl px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
                 </select>
               </div>
-              <p id="monthlyHolidaysSubtitle" class="text-xs font-semibold text-slate-400 mt-1.5 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
-                <span>0 Hari Libur Nasional di bulan ini</span>
-              </p>
             </div>
 
             <!-- Tombol Navigasi -->
@@ -669,7 +665,6 @@
       const monthDisplay = document.getElementById("currentMonthDisplay");
       const yearPicker = document.getElementById("yearPicker");
       const calendarGrid = document.getElementById("calendarGrid");
-      const subtitle = document.getElementById("monthlyHolidaysSubtitle");
 
       monthDisplay.textContent = monthsIndo[currentMonth];
       yearPicker.value = currentYear;
@@ -730,12 +725,6 @@
         const dotContainer = document.createElement("div");
         dotContainer.className = "flex items-center gap-1 mt-0.5 absolute bottom-1";
 
-        if (holiday) {
-          const hDot = document.createElement("span");
-          hDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-rose-200' : 'bg-rose-500'}`;
-          dotContainer.appendChild(hDot);
-        }
-
         if (hasAgenda) {
           const aDot = document.createElement("span");
           aDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-emerald-500'}`;
@@ -753,11 +742,6 @@
         cell.textContent = next;
         calendarGrid.appendChild(cell);
       }
-
-      subtitle.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
-        <span>${countMonthlyHolidays} Hari Libur Nasional & Cuti di bulan ini</span>
-      `;
 
       renderMonthlyHolidayList(holidays, totalDays);
     }
@@ -1125,7 +1109,7 @@
       const savedSessionKey = sessionStorage.getItem(SESSION_KEY_STORAGE);
       if (savedSessionKey) {
         activeAccessKey = savedSessionKey;
-        const ok = await fetchCloudAgendas(false);
+      const ok = await fetchCloudAgendas(false);
         if (ok) unlockApp();
       }
     });
