@@ -374,7 +374,7 @@
         [`${year}-01-01`]: { name: "Tahun Baru Masehi", type: "national" },
         [`${year}-05-01`]: { name: "Hari Buruh Internasional", type: "national" },
         [`${year}-06-01`]: { name: "Hari Lahir Pancasila", type: "national" },
-        [`${year}-08-17`]: { name: "Hari Kemerdekaan RI (HUT RI)", type: "national" },
+        [`${year}-08-17`]: { name: year === 2027 ? "Hari Kemerdekaan RI ke-82" : "Hari Kemerdekaan RI (HUT RI)", type: "national" },
         [`${year}-12-25`]: { name: "Hari Raya Natal", type: "national" },
         [`${year}-12-26`]: { name: "Cuti Bersama Hari Raya Natal", type: "joint" }
       };
@@ -390,7 +390,30 @@
         "2026-05-14": { name: "Kenaikan Yesus Kristus", type: "national" },
         "2026-05-31": { name: "Hari Raya Waisak 2570 BE", type: "national" },
         "2026-06-16": { name: "Tahun Baru Islam 1448 H", type: "national" },
-        "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" }
+        "2026-08-25": { name: "Maulid Nabi Muhammad SAW", type: "national" },
+
+        // Jadwal Libur Nasional & Cuti Bersama 2027 (SKB 3 Menteri)
+        "2027-01-05": { name: "Isra Miraj Nabi Muhammad SAW", type: "national" },
+        "2027-02-05": { name: "Cuti Bersama Tahun Baru Imlek", type: "joint" },
+        "2027-02-06": { name: "Tahun Baru Imlek 2578", type: "national" },
+        "2027-03-08": { name: "Hari Raya Nyepi", type: "national" },
+        "2027-03-09": { name: "Cuti Bersama Hari Raya Idul Fitri", type: "joint" },
+        "2027-03-10": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
+        "2027-03-11": { name: "Hari Raya Idul Fitri 1448 H", type: "national" },
+        "2027-03-12": { name: "Cuti Bersama Hari Raya Idul Fitri", type: "joint" },
+        "2027-03-15": { name: "Cuti Bersama Hari Raya Idul Fitri", type: "joint" },
+        "2027-03-25": { name: "Cuti Bersama Wafat Isa Almasih", type: "joint" },
+        "2027-03-26": { name: "Wafat Isa Almasih", type: "national" },
+        "2027-03-28": { name: "Kebangkitan Yesus Kristus (Paskah)", type: "national" },
+        "2027-05-06": { name: "Kenaikan Isa Almasih", type: "national" },
+        "2027-05-17": { name: "Hari Raya Idul Adha 1448 H", type: "national" },
+        "2027-05-18": { name: "Cuti Bersama Hari Raya Idul Adha", type: "joint" },
+        "2027-05-19": { name: "Cuti Bersama Hari Raya Waisak", type: "joint" },
+        "2027-05-20": { name: "Hari Raya Waisak 2571", type: "national" },
+        "2027-06-06": { name: "Tahun Baru Islam 1449 H", type: "national" },
+        "2027-08-15": { name: "Maulid Nabi Muhammad SAW", type: "national" },
+        "2027-12-24": { name: "Cuti Bersama Hari Raya Natal", type: "joint" },
+        "2027-12-26": { name: "Isra Miraj Nabi Muhammad SAW 1449 H", type: "national" }
       };
 
       return { ...fixed, ...religiousLookup };
@@ -424,7 +447,7 @@
         }
 
         if (Object.keys(mappedHolidays).length > 0) {
-          holidaysCache[year] = mappedHolidays;
+          holidaysCache[year] = { ...mappedHolidays, ...getFallbackHolidays(year) };
           if (currentYear === year) renderCalendar();
           if (selectedDateStr.startsWith(`${year}-`)) updateSelectedDateUI();
         }
@@ -508,10 +531,8 @@
           cellClasses += "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/30 z-10 font-black";
         } else if (isToday) {
           cellClasses += "bg-brand-50 border-2 border-brand-500 text-brand-700 font-extrabold";
-        } else if (holiday && holiday.type === "national") {
+        } else if (holiday) {
           cellClasses += "text-rose-600 bg-rose-50/70 border-rose-100 hover:bg-rose-100 font-extrabold";
-        } else if (holiday && holiday.type === "joint") {
-          cellClasses += "text-amber-700 bg-amber-50/70 border-amber-100 hover:bg-amber-100 font-bold";
         } else if (isSunday) {
           cellClasses += "text-rose-600 border-transparent hover:bg-rose-50 font-bold";
         } else if (dayOfWeek === 6) {
