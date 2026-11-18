@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>KALENDER ITP</title>
-<link rel="icon" type="image/png" href="/logo.png">
-<link rel="apple-touch-icon" href="/logo.png">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
   
   <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -30,6 +30,10 @@
               600: '#4f46e5',
               700: '#4338ca',
             }
+          },
+          boxShadow: {
+            'soft': '0 10px 40px -10px rgba(15, 23, 42, 0.06)',
+            'brand-glow': '0 8px 25px -5px rgba(79, 70, 229, 0.35)',
           }
         }
       }
@@ -45,18 +49,23 @@
       padding-top: var(--sat);
       padding-bottom: var(--sab);
       -webkit-tap-highlight-color: transparent;
+      background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
     }
     .touch-target {
-      min-height: 44px;
-      min-width: 44px;
+      min-height: 40px;
+      min-width: 40px;
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 999px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -66,35 +75,43 @@
     .shake-anim {
       animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
   </style>
 </head>
 <body class="bg-slate-100/90 text-slate-800 min-h-screen antialiased flex flex-col justify-between selection:bg-brand-600 selection:text-white">
 
   <!-- ================= LAYAR GERBANG LOGIN ================= -->
-  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-    <div id="loginCard" class="bg-white w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 transition-all text-center relative overflow-hidden">
-      <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
-        <i data-lucide="lock" class="w-8 h-8"></i>
+  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xl p-4 transition-all">
+    <div id="loginCard" class="bg-white/95 backdrop-blur-md w-full max-w-sm rounded-3xl p-7 sm:p-8 shadow-2xl border border-white/60 transition-all text-center relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-brand-glow">
+        <i data-lucide="lock" class="w-7 h-7"></i>
       </div>
-   <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Welcome to kalender ITP</h2>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Masukkan Access Key agar dapat masuk</p>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">KALENDER ITP</h2>
+      <p class="text-xs text-slate-500 mt-1.5 mb-6 font-medium">Masukkan Access Key untuk membuka ruang kerja Anda</p>
       
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
         <div>
-          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">Access Key</label>
+          <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2 text-center">Access Key</label>
           <div class="relative">
-            <input type="password" id="accessKeyInput" autocomplete="off" required
-              class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white pr-12 transition">
-            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 touch-target flex items-center justify-center" aria-label="Lihat kata sandi">
+            <input type="password" id="accessKeyInput" autocomplete="off" required placeholder="••••••••"
+              class="w-full bg-slate-50/80 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white pr-11 transition">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 touch-target flex items-center justify-center" aria-label="Lihat kata sandi">
               <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
             </button>
           </div>
-          <p id="loginErrorMsg" class="text-xs text-rose-500 mt-2 font-medium hidden flex items-center gap-1.5">
+          <p id="loginErrorMsg" class="text-xs text-rose-500 mt-2.5 font-semibold hidden flex items-center justify-center gap-1.5">
             <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
             <span id="loginErrorText">Access Key salah! Silakan coba lagi.</span>
           </p>
         </div>
-        <button type="submit" id="loginSubmitBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-brand-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm touch-target">
+        <button type="submit" id="loginSubmitBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-brand-glow active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm touch-target">
           <span id="loginBtnText">Buka Kalender</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
@@ -105,19 +122,27 @@
   <!-- ================= APLIKASI UTAMA KALENDER ================= -->
   <div id="appContainer" class="hidden flex-1 flex flex-col">
     <!-- Header Navigasi Atas -->
-    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <header class="bg-white/85 backdrop-blur-xl border-b border-slate-200/80 sticky top-0 z-30">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-brand-600 text-white rounded-2xl flex items-center justify-center shadow-md shadow-brand-500/25 shrink-0">
+          <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-2xl flex items-center justify-center shadow-brand-glow shrink-0">
             <i data-lucide="calendar" class="w-5 h-5"></i>
           </div>
           <div>
-            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">KALENDER ITP</h1>
+            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight tracking-tight">KALENDER ITP</h1>
+            <p class="text-[10px] font-semibold text-slate-400 hidden sm:block">Personal Workspace & Schedule</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Kunci Kalender">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Indikator Status Cloud -->
+          <button onclick="fetchCloudAgendas(true)" title="Klik untuk sinkronisasi manual" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl text-[11px] font-bold text-slate-600 transition">
+            <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="syncIndicatorText" class="hidden xs:inline sm:inline">Tersambung</span>
+            <i data-lucide="refresh-cw" id="refreshIcon" class="w-3 h-3 text-slate-400 ml-0.5"></i>
+          </button>
+
+          <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition flex items-center justify-center" title="Kunci Kalender">
             <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
@@ -129,55 +154,55 @@
       
       <!-- SISI KIRI: KALENDER -->
       <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-4">
-        <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/90">
+        <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-soft border border-slate-200/80">
           
           <!-- Kontrol Navigasi Bulan & Tahun -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
-              <div class="flex items-center gap-2">
-                <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 capitalize">November</h2>
-                <select id="yearPicker" onchange="changeYear(this.value)" class="text-base sm:text-lg font-bold bg-slate-100 border border-slate-200 rounded-xl px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+              <div class="flex items-center gap-2.5">
+                <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 capitalize tracking-tight">November</h2>
+                <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 rounded-xl px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
                 </select>
               </div>
-              <p id="monthlyHolidaysSubtitle" class="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
+              <p id="monthlyHolidaysSubtitle" class="text-xs font-semibold text-slate-400 mt-1.5 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
                 <span>0 Hari Libur Nasional di bulan ini</span>
               </p>
             </div>
 
             <!-- Tombol Navigasi -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl self-start sm:self-auto">
-              <button onclick="prevMonth()" aria-label="Bulan Lalu" class="touch-target p-2 hover:bg-white text-slate-700 rounded-xl transition active:scale-90">
+            <div class="flex items-center gap-1 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/60 self-start sm:self-auto">
+              <button onclick="prevMonth()" aria-label="Bulan Lalu" class="touch-target p-2 hover:bg-white hover:shadow-xs text-slate-700 rounded-xl transition active:scale-90 flex items-center justify-center">
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
               </button>
-              <button onclick="goToToday()" class="touch-target px-3 py-1.5 text-xs font-bold text-brand-600 hover:bg-white rounded-xl transition shadow-none hover:shadow-xs">
+              <button onclick="goToToday()" class="touch-target px-3.5 py-1.5 text-xs font-extrabold text-brand-600 hover:bg-white rounded-xl transition shadow-none hover:shadow-xs">
                 Hari Ini
               </button>
-              <button onclick="nextMonth()" aria-label="Bulan Berikutnya" class="touch-target p-2 hover:bg-white text-slate-700 rounded-xl transition active:scale-90">
+              <button onclick="nextMonth()" aria-label="Bulan Berikutnya" class="touch-target p-2 hover:bg-white hover:shadow-xs text-slate-700 rounded-xl transition active:scale-90 flex items-center justify-center">
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
           <!-- Header Nama Hari -->
-          <div class="grid grid-cols-7 gap-1 text-center font-extrabold text-xs mb-2">
-            <span class="text-rose-600 py-1.5 rounded-xl bg-rose-50/70">Min</span>
-            <span class="text-slate-600 py-1.5">Sen</span>
-            <span class="text-slate-600 py-1.5">Sel</span>
-            <span class="text-slate-600 py-1.5">Rab</span>
-            <span class="text-slate-600 py-1.5">Kam</span>
-            <span class="text-slate-600 py-1.5">Jum</span>
-            <span class="text-indigo-600 py-1.5">Sab</span>
+          <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center font-extrabold text-xs mb-2.5">
+            <span class="text-rose-600 py-1.5 rounded-xl bg-rose-50/80">Min</span>
+            <span class="text-slate-500 py-1.5">Sen</span>
+            <span class="text-slate-500 py-1.5">Sel</span>
+            <span class="text-slate-500 py-1.5">Rab</span>
+            <span class="text-slate-500 py-1.5">Kam</span>
+            <span class="text-slate-500 py-1.5">Jum</span>
+            <span class="text-indigo-600 py-1.5 rounded-xl bg-indigo-50/60">Sab</span>
           </div>
 
           <!-- Grid Sel Tanggal Kalender -->
-          <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 select-none min-h-[300px]">
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2 select-none min-h-[300px]">
           </div>
         </div>
 
-        <!-- Kartu Banner Hari Libur Nasional & Daftar Cuti Bulan Ini -->
-        <div id="holidayInfoCard" class="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 flex items-start gap-3 hidden transition-all">
-          <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+        <!-- Kartu Banner Hari Libur Nasional pada Tanggal Terpilih -->
+        <div id="holidayInfoCard" class="bg-gradient-to-r from-rose-50 to-orange-50/60 border border-rose-200/80 rounded-2xl p-3.5 flex items-start gap-3 hidden transition-all animate-fade-in">
+          <div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
             <i data-lucide="party-popper" class="w-4 h-4"></i>
           </div>
           <div>
@@ -187,11 +212,15 @@
         </div>
 
         <!-- Box Daftar Hari Libur & Cuti Bulan Ini -->
-        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/90">
-          <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <i data-lucide="calendar-days" class="w-4 h-4 text-rose-500"></i>
-            <span>Daftar Libur & Cuti Bulan <span id="currentMonthNameSpan">November</span></span>
-          </h4>
+        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="calendar-days" class="w-4 h-4 text-rose-500"></i>
+              <span>Daftar Libur & Cuti <span id="currentMonthNameSpan">November</span></span>
+            </h4>
+            <!-- Indikator Libur Terdekat -->
+            <span id="nextHolidayCountdown" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80"></span>
+          </div>
           <div id="monthlyHolidayList" class="space-y-2 max-h-[180px] overflow-y-auto custom-scroll pr-1">
             <!-- Diisi dinamis via JS -->
           </div>
@@ -200,27 +229,27 @@
 
       <!-- SISI KANAN: PANEL AGENDA & INPUT -->
       <div class="lg:col-span-5 xl:col-span-4 flex flex-col space-y-4">
-        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/90 flex-1 flex flex-col justify-between">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 flex-1 flex flex-col justify-between">
           <div>
             <!-- Header Rincian Tanggal -->
             <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <div>
-                <span class="text-[10px] font-black uppercase text-brand-600 tracking-wider">Catatan Tanggal</span>
+                <span class="text-[10px] font-black uppercase text-brand-600 tracking-widest">Catatan Tanggal</span>
                 <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 mt-0.5 leading-snug">-</h3>
               </div>
-              <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-xl text-xs font-bold shrink-0">
+              <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-xl text-xs font-extrabold shrink-0">
                 0 Catatan
               </span>
             </div>
 
             <!-- Formulir Tambah / Edit Catatan -->
-            <form onsubmit="handleSaveAgenda(event)" class="mt-4 space-y-2.5 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
+            <form onsubmit="handleSaveAgenda(event)" class="mt-4 space-y-2.5 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80">
               <div>
                 <input type="text" id="agendaTitleInput" required placeholder="Judul kegiatan..."
                   class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
               </div>
               <div>
-                <textarea id="agendaNoteInput" rows="2" placeholder="Catatan tambahan..."
+                <textarea id="agendaNoteInput" rows="2" placeholder="Catatan tambahan (opsional)..."
                   class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none"></textarea>
               </div>
               <div class="grid grid-cols-2 gap-2">
@@ -234,7 +263,7 @@
                   <option value="Santai">🌴 Santai</option>
                 </select>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 pt-0.5">
                 <button type="submit" id="submitBtn"
                   class="touch-target flex-1 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.98] flex items-center justify-center gap-1.5 transition disabled:opacity-50">
                   <i data-lucide="plus-circle" id="submitBtnIcon" class="w-4 h-4"></i>
@@ -249,10 +278,29 @@
 
             <!-- Daftar Agenda Pada Tanggal Terpilih -->
             <div class="mt-5">
-              <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-600"></i>
-                <span>Daftar Kegiatan</span>
-              </h4>
+              <div class="flex items-center justify-between mb-2.5">
+                <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-600"></i>
+                  <span>Daftar Kegiatan</span>
+                </h4>
+              </div>
+
+              <!-- Fitur Pencarian & Filter Kategori -->
+              <div class="mb-3 space-y-2">
+                <div class="relative">
+                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                  <input type="text" id="searchAgendaInput" oninput="renderAgendaList()" placeholder="Cari kegiatan di tanggal ini..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                </div>
+                <div class="flex items-center gap-1 overflow-x-auto pb-1 custom-scroll text-[11px]">
+                  <button type="button" onclick="setCategoryFilter('Semua')" id="filterBtn-Semua" class="px-2.5 py-1 rounded-lg font-bold bg-brand-600 text-white shrink-0 transition">Semua</button>
+                  <button type="button" onclick="setCategoryFilter('Kerja')" id="filterBtn-Kerja" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Kerja</button>
+                  <button type="button" onclick="setCategoryFilter('Pribadi')" id="filterBtn-Pribadi" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Pribadi</button>
+                  <button type="button" onclick="setCategoryFilter('Penting')" id="filterBtn-Penting" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Penting</button>
+                  <button type="button" onclick="setCategoryFilter('Santai')" id="filterBtn-Santai" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Santai</button>
+                </div>
+              </div>
+
               <div id="agendaList" class="space-y-2 max-h-[260px] sm:max-h-[300px] overflow-y-auto custom-scroll pr-1">
               </div>
             </div>
@@ -263,7 +311,7 @@
   </div>
 
   <!-- Toast Notification Feedback -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none backdrop-blur-sm border border-slate-700/60">
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none backdrop-blur-md border border-slate-700/60">
     <i data-lucide="check-circle-2" id="toastIcon" class="w-4 h-4 text-emerald-400 shrink-0"></i>
     <span id="toastMessage">Pesan</span>
   </div>
@@ -277,6 +325,7 @@
     let activeAccessKey = "";
     let agendas = {}; 
     let editingAgendaId = null;
+    let activeCategoryFilter = "Semua";
     let holidaysCache = {};
     let fetchingHolidayYears = {};
     let isSyncing = false;
@@ -324,11 +373,11 @@
         }
 
         if (showFeedback) showToast("Data terbaru berhasil dimuat!");
-        setSyncStatus("connected", "Sinkron selesai");
+        setSyncStatus("connected", "Tersambung");
         return true;
       } catch (err) {
         console.error(err);
-        setSyncStatus("error", "Gagal terhubung ke server");
+        setSyncStatus("error", "Offline / Error");
         if (showFeedback) showToast("Gagal menyinkronkan data!");
         return false;
       } finally {
@@ -339,7 +388,7 @@
 
     async function pushCloudAgendas() {
       if (!activeAccessKey) return false;
-      setSyncStatus("syncing", "Menyimpan ke Cloud...");
+      setSyncStatus("syncing", "Menyimpan...");
 
       try {
         const response = await fetch(API_ENDPOINT, {
@@ -353,11 +402,11 @@
 
         if (!response.ok) throw new Error("Gagal menyimpan ke database");
 
-        setSyncStatus("connected", "Tersinkron ke Neon DB");
+        setSyncStatus("connected", "Tersinkron");
         return true;
       } catch (err) {
         console.error(err);
-        setSyncStatus("error", "Gagal menyimpan ke Cloud!");
+        setSyncStatus("error", "Gagal Simpan");
         showToast("Error: Data gagal tersimpan ke database!");
         return false;
       }
@@ -491,6 +540,33 @@
       updateSelectedDateUI();
     }
 
+    function updateNextHolidayCountdown(holidays) {
+      const countdownEl = document.getElementById("nextHolidayCountdown");
+      if (!countdownEl) return;
+
+      const todayMidnight = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+      const upcoming = Object.keys(holidays)
+        .map(dateKey => {
+          const [y, m, d] = dateKey.split('-').map(Number);
+          return { date: new Date(y, m - 1, d), ...holidays[dateKey] };
+        })
+        .filter(item => item.date >= todayMidnight)
+        .sort((a, b) => a.date - b.date);
+
+      if (upcoming.length > 0) {
+        const next = upcoming[0];
+        const diffDays = Math.round((next.date - todayMidnight) / (1000 * 60 * 60 * 24));
+        countdownEl.classList.remove("hidden");
+        if (diffDays === 0) {
+          countdownEl.textContent = `Hari ini: ${next.name}`;
+        } else {
+          countdownEl.textContent = `Libur terdekat: ${diffDays} hari lagi`;
+        }
+      } else {
+        countdownEl.classList.add("hidden");
+      }
+    }
+
     function renderMonthlyHolidayList(holidays, totalDays) {
       const container = document.getElementById("monthlyHolidayList");
       const nameSpan = document.getElementById("currentMonthNameSpan");
@@ -498,6 +574,7 @@
 
       nameSpan.textContent = monthsIndo[currentMonth];
       container.innerHTML = "";
+      updateNextHolidayCountdown(holidays);
 
       let monthHolidays = [];
       for (let day = 1; day <= totalDays; day++) {
@@ -515,7 +592,7 @@
 
       if (monthHolidays.length === 0) {
         container.innerHTML = `
-          <div class="p-3 text-center text-slate-400 bg-slate-50 rounded-2xl text-xs font-medium">
+          <div class="p-3.5 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl text-xs font-medium">
             Tidak ada hari libur nasional atau cuti bersama di bulan ini.
           </div>
         `;
@@ -524,7 +601,7 @@
 
       monthHolidays.forEach(h => {
         const item = document.createElement("div");
-        item.className = "flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100/80 rounded-2xl border border-slate-200/60 transition cursor-pointer";
+        item.className = "flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100 rounded-2xl border border-slate-200/60 transition cursor-pointer";
         item.onclick = () => selectDate(h.dateKey);
 
         const badgeClass = h.type === "national" 
@@ -594,7 +671,7 @@
         let cellClasses = "touch-target relative flex flex-col items-center justify-center p-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition duration-150 active:scale-95 border ";
 
         if (isSelected) {
-          cellClasses += "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/30 z-10 font-black";
+          cellClasses += "bg-brand-600 text-white border-brand-600 shadow-brand-glow z-10 font-black";
         } else if (isToday) {
           cellClasses += "bg-brand-50 border-2 border-brand-500 text-brand-700 font-extrabold";
         } else if (holiday) {
@@ -705,6 +782,21 @@
       } else {
         holidayCard.classList.add("hidden");
       }
+    }
+
+    function setCategoryFilter(category) {
+      activeCategoryFilter = category;
+      const categories = ["Semua", "Kerja", "Pribadi", "Penting", "Santai"];
+      categories.forEach(cat => {
+        const btn = document.getElementById(`filterBtn-${cat}`);
+        if (!btn) return;
+        if (cat === category) {
+          btn.className = "px-2.5 py-1 rounded-lg font-bold bg-brand-600 text-white shrink-0 transition shadow-xs";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition";
+        }
+      });
+      renderAgendaList();
     }
 
     function editAgenda(id) {
@@ -824,16 +916,38 @@
     function renderAgendaList() {
       const listContainer = document.getElementById("agendaList");
       const badge = document.getElementById("agendaCountBadge");
-      const currentList = agendas[selectedDateStr] || [];
+      const searchInput = document.getElementById("searchAgendaInput");
+      const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
 
-      badge.textContent = `${currentList.length} Catatan`;
+      const allDayAgendas = agendas[selectedDateStr] || [];
+      badge.textContent = `${allDayAgendas.length} Catatan`;
+
+      const filteredList = allDayAgendas.filter(item => {
+        const matchesCategory = activeCategoryFilter === "Semua" || item.category === activeCategoryFilter;
+        const matchesSearch = !searchQuery || 
+          (item.title && item.title.toLowerCase().includes(searchQuery)) ||
+          (item.note && item.note.toLowerCase().includes(searchQuery));
+        return matchesCategory && matchesSearch;
+      });
+
       listContainer.innerHTML = "";
 
-      if (currentList.length === 0) {
+      if (allDayAgendas.length === 0) {
         listContainer.innerHTML = `
-          <div class="p-6 text-center text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+          <div class="p-6 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl">
             <i data-lucide="calendar-x" class="w-6 h-6 mx-auto mb-2 text-slate-300"></i>
             <p class="text-xs font-semibold">Belum ada agenda pada tanggal tersebut</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      if (filteredList.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-5 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl">
+            <i data-lucide="search-x" class="w-5 h-5 mx-auto mb-1.5 text-slate-300"></i>
+            <p class="text-xs font-semibold">Tidak ada agenda yang cocok dengan filter</p>
           </div>
         `;
         lucide.createIcons();
@@ -847,12 +961,12 @@
         'Santai': 'bg-emerald-50 text-emerald-700 border-emerald-200'
       };
 
-      currentList.forEach(item => {
+      filteredList.forEach(item => {
         const itemEl = document.createElement("div");
         const bStyle = catBadges[item.category] || 'bg-slate-100 text-slate-700 border-slate-200';
         const noteHtml = item.note ? `<p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2 ${item.done ? 'line-through opacity-75' : ''}">${item.note}</p>` : '';
         const isEditing = (editingAgendaId === item.id);
-        itemEl.className = `flex items-center justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-brand-300 shadow-xs')}`;
+        itemEl.className = `animate-fade-in flex items-center justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-brand-300 shadow-xs')}`;
         
         itemEl.innerHTML = `
           <div class="flex items-center gap-2.5 overflow-hidden flex-1">
@@ -862,7 +976,7 @@
             <div class="truncate flex-1">
               <p class="text-xs sm:text-sm font-bold text-slate-800 truncate ${item.done ? 'line-through text-slate-400' : ''}">${item.title}</p>
               ${noteHtml}
-              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-0.5">
+              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-1">
                 <span>⏰ ${item.time}</span>
                 <span>•</span>
                 <span class="px-1.5 py-0.2 rounded-md border font-bold ${bStyle}">${item.category}</span>
@@ -918,7 +1032,7 @@
         unlockApp();
       } else {
         activeAccessKey = "";
-        errText.textContent = "Access Key salah! Silahkan coba lagi";
+        errText.textContent = "Access Key salah! Silakan coba lagi.";
         err.classList.remove("hidden");
         card.classList.remove("shake-anim");
         void card.offsetWidth;
