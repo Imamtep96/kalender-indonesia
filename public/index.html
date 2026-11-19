@@ -382,13 +382,13 @@
       return { day, shortLabel, fullLabel };
     }
 
-    function getHijriMonthSpanLabel(year, month) {
-      if (!hijriFormatters) return "";
-      const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
-      const lastDay = new Date(year, month + 1, 0).getDate();
-      const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
-      return startH === endH ? `${startH} H` : `${startH} – ${endH} H`;
-    }
+   function getHijriMonthSpanLabel(year, month) {
+  if (!hijriFormatters) return "";
+  const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
+  return startH === endH ? `${startH}` : `${startH} – ${endH}`;
+}
 
     function setSyncStatus(status, text) {
       const dot = document.getElementById("syncIndicatorDot");
@@ -875,12 +875,12 @@
 
       document.getElementById("selectedDateDisplay").textContent = `${dayName}, ${d} ${monthsIndo[m]} ${y}`;
 
-      const subDisplay = document.getElementById("selectedJavaneseHijriDisplay");
-      if (subDisplay) {
-        const jawaPart = `${dayName} ${pasaran}`;
-        const hijriPart = hijri.fullLabel ? `${hijri.fullLabel} H` : "";
-        subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
-      }
+     const subDisplay = document.getElementById("selectedJavaneseHijriDisplay");
+if (subDisplay) {
+  const jawaPart = `${dayName} ${pasaran}`;
+  const hijriPart = hijri.fullLabel ? `${hijri.fullLabel}` : "";
+  subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
+}
 
       const holidays = getHolidays(y);
       const holiday = holidays[selectedDateStr];
