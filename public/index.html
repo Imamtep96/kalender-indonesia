@@ -647,14 +647,14 @@
           toggleGlobalSearch(false);
           selectDate(item.dateKey);
         };
-        btn.className = "w-full text-left p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-brand-50 dark:hover:bg-brand-950/50 border border-slate-200/80 dark:border-slate-700/80 transition flex items-center justify-between gap-3";
+        btn.className = "w-full text-left p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-brand-50 dark:hover:bg-brand-950/50 border border-slate-200/80 dark:border-slate-700/80 transition flex items-start justify-between gap-3";
         btn.innerHTML = `
-          <div class="overflow-hidden">
-            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate ${item.done ? 'line-through opacity-60' : ''}">${escapeHTML(item.title)}</p>
-            ${item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${escapeHTML(item.note)}</p>` : ''}
+          <div class="min-w-0 flex-1">
+            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 break-words ${item.done ? 'line-through opacity-60' : ''}">${escapeHTML(item.title)}</p>
+            ${item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 whitespace-pre-wrap break-words leading-relaxed mt-0.5">${escapeHTML(item.note)}</p>` : ''}
             <p class="text-[10px] font-bold text-brand-600 dark:text-brand-400 mt-1">📅 ${dateLabel} • ⏰ ${escapeHTML(item.time || '--:--')} • ${escapeHTML(item.category)}${repeatTag}</p>
           </div>
-          <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-400 shrink-0"></i>
+          <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-400 shrink-0 mt-0.5"></i>
         `;
         container.appendChild(btn);
       });
@@ -1676,22 +1676,22 @@
       filteredList.forEach(item => {
         const itemEl = document.createElement("div");
         const bStyle = catBadges[item.category] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-        const noteHtml = item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 ${item.done ? 'line-through opacity-75' : ''}">${escapeHTML(item.note)}</p>` : '';
+        const noteHtml = item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 whitespace-pre-wrap break-words leading-relaxed ${item.done ? 'line-through opacity-75' : ''}">${escapeHTML(item.note)}</p>` : '';
         const repeatBadge = item.repeat && item.repeat !== "none"
           ? `<span class="px-1.5 py-0.2 rounded-md border font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/60">🔁 ${REPEAT_LABELS[item.repeat]}</span>`
           : '';
         const isEditing = (editingAgendaId === item.id);
-        itemEl.className = `animate-fade-in flex items-center justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 dark:bg-brand-950/50 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60' : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80 hover:border-brand-300 dark:hover:border-brand-600 shadow-xs')}`;
+        itemEl.className = `animate-fade-in flex items-start justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 dark:bg-brand-950/50 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60' : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80 hover:border-brand-300 dark:hover:border-brand-600 shadow-xs')}`;
         
         itemEl.innerHTML = `
-          <div class="flex items-center gap-2.5 overflow-hidden flex-1">
-            <button type="button" onclick="toggleDone('${item.id}', '${item.originDate}', ${item.isRecurringInstance})" class="w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${item.done ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 dark:border-slate-600 hover:border-brand-500'}">
+          <div class="flex items-start gap-2.5 min-w-0 flex-1">
+            <button type="button" onclick="toggleDone('${item.id}', '${item.originDate}', ${item.isRecurringInstance})" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${item.done ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 dark:border-slate-600 hover:border-brand-500'}">
               ${item.done ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ''}
             </button>
-            <div class="truncate flex-1">
-              <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate ${item.done ? 'line-through text-slate-400' : ''}">${escapeHTML(item.title)}</p>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 break-words ${item.done ? 'line-through text-slate-400' : ''}">${escapeHTML(item.title)}</p>
               ${noteHtml}
-              <div class="flex items-center flex-wrap gap-1.5 text-[10px] text-slate-400 font-semibold mt-1">
+              <div class="flex items-center flex-wrap gap-1.5 text-[10px] text-slate-400 font-semibold mt-1.5">
                 <span>⏰ ${escapeHTML(item.time)}</span>
                 <span>•</span>
                 <span class="px-1.5 py-0.2 rounded-md border font-bold ${bStyle}">${escapeHTML(item.category)}</span>
