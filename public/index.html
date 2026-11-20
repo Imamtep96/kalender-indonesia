@@ -147,12 +147,11 @@
 
       <!-- Penghitung Durasi Waktu (Start / Pause / Stop / Reset & Hasil) -->
       <div class="mt-6 sm:mt-8 w-full max-w-md bg-white/[0.06] border border-white/15 rounded-3xl p-4 sm:p-5 backdrop-blur-md">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+        <div class="flex items-center justify-center mb-2">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1.5">
             <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
             <span>Duration Counter</span>
           </span>
-          <span id="swStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300">Siap</span>
         </div>
 
         <!-- Tampilan Durasi Berjalan -->
@@ -485,7 +484,6 @@
 
       const displayEl = document.getElementById("swElapsedDisplay");
       const summaryEl = document.getElementById("swHumanSummary");
-      const badgeEl = document.getElementById("swStatusBadge");
       const logDetailEl = document.getElementById("swLogDetail");
       const startLabelEl = document.getElementById("swStartTimeLabel");
       const endLabelEl = document.getElementById("swEndTimeLabel");
@@ -498,10 +496,6 @@
       if (displayEl) displayEl.textContent = `${hh}:${mm}:${ss}`;
 
       if (swState === "idle") {
-        if (badgeEl) {
-          badgeEl.textContent = "Siap";
-          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300";
-        }
         if (summaryEl) summaryEl.textContent = "Tekan Start untuk mulai menghitung";
         if (logDetailEl) logDetailEl.classList.add("hidden");
         if (startBtn) startBtn.disabled = false;
@@ -509,10 +503,6 @@
         if (stopBtn) stopBtn.disabled = true;
         if (resetBtn) resetBtn.disabled = true;
       } else if (swState === "running") {
-        if (badgeEl) {
-          badgeEl.textContent = "Berjalan";
-          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-        }
         if (summaryEl) summaryEl.textContent = `Berjalan: ${formatDurationHuman(elapsedMs)}`;
         if (logDetailEl) logDetailEl.classList.remove("hidden");
         if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)} (${formatClockHHMMSS(swFirstStartTime)})`;
@@ -522,10 +512,6 @@
         if (stopBtn) stopBtn.disabled = false;
         if (resetBtn) resetBtn.disabled = false;
       } else if (swState === "paused") {
-        if (badgeEl) {
-          badgeEl.textContent = "Dijeda (Pause)";
-          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30";
-        }
         if (summaryEl) summaryEl.textContent = `Dijeda pada: ${formatDurationHuman(elapsedMs)}`;
         if (logDetailEl) logDetailEl.classList.remove("hidden");
         if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
@@ -535,10 +521,6 @@
         if (stopBtn) stopBtn.disabled = false;
         if (resetBtn) resetBtn.disabled = false;
       } else if (swState === "stopped") {
-        if (badgeEl) {
-          badgeEl.textContent = "Selesai";
-          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        }
         const diffClockMins = (swFirstStartTime && swStopTime)
           ? Math.max(0, Math.round((swStopTime.getTime() - swFirstStartTime.getTime()) / 60000))
           : Math.round(elapsedMs / 60000);
