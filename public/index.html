@@ -871,10 +871,17 @@
       return null;
     })();
 
+    function formatHijriMonthSpacing(label) {
+      if (!label) return "";
+      return label
+        .replace(/Jumadilawal/gi, "Jumadil Awal")
+        .replace(/Jumadilakhir/gi, "Jumadil Akhir");
+    }
+
     function getHijriInfo(dateObj) {
       if (!hijriFormatters) return { day: "", shortLabel: "", fullLabel: "" };
-      const fullLabel = hijriFormatters.fullFmt.format(dateObj);
-      const shortLabel = hijriFormatters.dayMonthFmt.format(dateObj);
+      const fullLabel = formatHijriMonthSpacing(hijriFormatters.fullFmt.format(dateObj));
+      const shortLabel = formatHijriMonthSpacing(hijriFormatters.dayMonthFmt.format(dateObj));
       const parts = hijriFormatters.dayMonthFmt.formatToParts ? hijriFormatters.dayMonthFmt.formatToParts(dateObj) : [];
       const dayPart = parts.find(p => p.type === "day");
       const day = dayPart ? dayPart.value : shortLabel.split(" ")[0];
