@@ -17,6 +17,7 @@
 
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -52,6 +53,10 @@
       background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
                         radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
     }
+    html.dark body {
+      background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
+    }
     .touch-target {
       min-height: 40px;
       min-width: 40px;
@@ -63,6 +68,9 @@
     .custom-scroll::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 999px;
+    }
+    html.dark .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
     }
     .custom-scroll::-webkit-scrollbar-track {
       background: transparent;
@@ -84,25 +92,25 @@
     }
   </style>
 </head>
-<body class="bg-slate-100/90 text-slate-800 min-h-screen antialiased flex flex-col justify-between selection:bg-brand-600 selection:text-white">
+<body class="bg-slate-100/90 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen antialiased flex flex-col justify-between selection:bg-brand-600 selection:text-white transition-colors duration-200">
 
   <!-- ================= LAYAR GERBANG LOGIN ================= -->
   <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xl p-4 transition-all">
-    <div id="loginCard" class="bg-white/95 backdrop-blur-md w-full max-w-sm rounded-3xl p-7 sm:p-8 shadow-2xl border border-white/60 transition-all text-center relative overflow-hidden">
+    <div id="loginCard" class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md w-full max-w-sm rounded-3xl p-7 sm:p-8 shadow-2xl border border-white/60 dark:border-slate-800 transition-all text-center relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
       <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-brand-glow">
         <i data-lucide="lock" class="w-7 h-7"></i>
       </div>
-      <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">KALENDER ITP</h2>
-      <p class="text-xs text-slate-500 mt-1.5 mb-6 font-medium">Masukkan Access Key untuk dapat akses</p>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">KALENDER ITP</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-6 font-medium">Masukkan Access Key untuk dapat akses</p>
       
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
         <div>
-          <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2 text-center">Access Key</label>
+          <label class="block text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 text-center">Access Key</label>
           <div class="relative">
             <input type="password" id="accessKeyInput" autocomplete="off" required placeholder=""
-              class="w-full bg-slate-50/80 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white pr-11 transition">
-            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 touch-target flex items-center justify-center" aria-label="Lihat kata sandi">
+              class="w-full bg-slate-50/80 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3.5 text-sm font-semibold text-center tracking-widest text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-800 pr-11 transition">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 touch-target flex items-center justify-center" aria-label="Lihat kata sandi">
               <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
             </button>
           </div>
@@ -200,30 +208,57 @@
     </div>
   </div>
 
+  <!-- ================= MODAL PENCARIAN GLOBAL ================= -->
+  <div id="globalSearchModal" onclick="if(event.target===this) toggleGlobalSearch(false)" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-md flex items-start justify-center p-4 pt-12 sm:pt-20 animate-fade-in">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
+        <i data-lucide="search" class="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0"></i>
+        <input type="text" id="globalSearchInput" oninput="renderGlobalSearchResults()" placeholder="Cari judul atau catatan di semua tanggal..."
+          class="w-full bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none">
+        <button type="button" onclick="toggleGlobalSearch(false)" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="globalSearchResults" class="p-3 max-h-[60vh] overflow-y-auto custom-scroll space-y-2">
+      </div>
+    </div>
+  </div>
+
   <!-- ================= APLIKASI UTAMA KALENDER ================= -->
   <div id="appContainer" class="hidden flex-1 flex flex-col">
     <!-- Header Navigasi Atas -->
-    <header class="bg-white/85 backdrop-blur-xl border-b border-slate-200/80 sticky top-0 z-30">
+    <header class="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 transition-colors">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-2xl flex items-center justify-center shadow-brand-glow shrink-0">
             <i data-lucide="calendar" class="w-5 h-5"></i>
           </div>
           <div>
-            <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight tracking-tight">KALENDER ITP</h1>
+            <h1 class="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight tracking-tight">KALENDER ITP</h1>
             <p class="text-[10px] font-semibold text-slate-400 hidden sm:block">Personal Workspace & Schedule</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-2 sm:gap-2.5">
+          <!-- Tombol Pencarian Global -->
+          <button type="button" onclick="toggleGlobalSearch(true)" title="Pencarian Global (Semua Tanggal)" class="touch-target px-2.5 sm:px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300 transition flex items-center justify-center gap-1.5">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i>
+            <span class="hidden md:inline">Cari Global</span>
+          </button>
+
+          <!-- Tombol Toggle Dark Mode -->
+          <button type="button" onclick="toggleDarkMode()" title="Ubah Tema Gelap / Terang" class="touch-target p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 rounded-xl text-slate-600 dark:text-amber-400 transition flex items-center justify-center">
+            <i data-lucide="moon" id="darkModeIcon" class="w-4 h-4"></i>
+          </button>
+
           <!-- Indikator Status Cloud -->
-          <button onclick="fetchCloudAgendas(true)" title="Klik untuk sinkronisasi manual" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl text-[11px] font-bold text-slate-600 transition">
+          <button onclick="fetchCloudAgendas(true)" title="Klik untuk sinkronisasi manual" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">
             <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span id="syncIndicatorText" class="hidden xs:inline sm:inline">Tersambung</span>
             <i data-lucide="refresh-cw" id="refreshIcon" class="w-3 h-3 text-slate-400 ml-0.5"></i>
           </button>
 
-          <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition flex items-center justify-center" title="Kunci Kalender">
+          <button onclick="lockApp()" class="touch-target p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-transparent hover:border-rose-100 dark:hover:border-rose-900 rounded-xl transition flex items-center justify-center" title="Kunci Kalender">
             <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
@@ -235,36 +270,36 @@
       
       <!-- SISI KIRI: KALENDER -->
       <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-4">
-        <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-soft border border-slate-200/80">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 shadow-soft border border-slate-200/80 dark:border-slate-800 transition-colors">
           
           <!-- Kontrol Navigasi Bulan & Tahun -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <div class="flex items-center gap-2.5 flex-wrap">
-                <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 capitalize tracking-tight">November</h2>
-                <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 rounded-xl px-2.5 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
+                <h2 id="currentMonthDisplay" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white capitalize tracking-tight">November</h2>
+                <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
                 </select>
               </div>
-              <p id="hijriMonthSubtitle" class="text-[11px] font-bold text-emerald-700 mt-1"></p>
+              <p id="hijriMonthSubtitle" class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mt-1"></p>
 
               <!-- Widget Hari, Tanggal, Jam, Detik Real-Time (Klik untuk Expand 1 Halaman) -->
               <button type="button" onclick="toggleClockExpand(true)" title="Klik untuk memperbesar jam menjadi satu halaman penuh"
-                class="mt-2 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-brand-50 border border-slate-200/90 hover:border-brand-300 text-left transition group active:scale-[0.99]">
-                <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-600 shrink-0"></i>
-                <span id="liveDateTimeInline" class="text-[11px] sm:text-xs font-bold text-slate-700 group-hover:text-brand-700 tabular-nums">-</span>
-                <i data-lucide="maximize-2" class="w-3 h-3 text-slate-400 group-hover:text-brand-600 ml-0.5 shrink-0"></i>
+                class="mt-2 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-brand-50 dark:hover:bg-brand-950/60 border border-slate-200/90 dark:border-slate-700 hover:border-brand-300 dark:hover:border-brand-700 text-left transition group active:scale-[0.99]">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0"></i>
+                <span id="liveDateTimeInline" class="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-brand-700 dark:group-hover:text-brand-300 tabular-nums">-</span>
+                <i data-lucide="maximize-2" class="w-3 h-3 text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 ml-0.5 shrink-0"></i>
               </button>
             </div>
 
             <!-- Tombol Navigasi -->
-            <div class="flex items-center gap-1 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/60 self-start sm:self-auto">
-              <button onclick="prevMonth()" aria-label="Bulan Lalu" class="touch-target p-2 hover:bg-white hover:shadow-xs text-slate-700 rounded-xl transition active:scale-90 flex items-center justify-center">
+            <div class="flex items-center gap-1 bg-slate-100/90 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-700 self-start sm:self-auto">
+              <button onclick="prevMonth()" aria-label="Bulan Lalu" class="touch-target p-2 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs text-slate-700 dark:text-slate-200 rounded-xl transition active:scale-90 flex items-center justify-center">
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
               </button>
-              <button onclick="goToToday()" class="touch-target px-3.5 py-1.5 text-xs font-extrabold text-brand-600 hover:bg-white rounded-xl transition shadow-none hover:shadow-xs">
+              <button onclick="goToToday()" class="touch-target px-3.5 py-1.5 text-xs font-extrabold text-brand-600 dark:text-brand-400 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition shadow-none hover:shadow-xs">
                 Hari Ini
               </button>
-              <button onclick="nextMonth()" aria-label="Bulan Berikutnya" class="touch-target p-2 hover:bg-white hover:shadow-xs text-slate-700 rounded-xl transition active:scale-90 flex items-center justify-center">
+              <button onclick="nextMonth()" aria-label="Bulan Berikutnya" class="touch-target p-2 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs text-slate-700 dark:text-slate-200 rounded-xl transition active:scale-90 flex items-center justify-center">
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
               </button>
             </div>
@@ -272,13 +307,13 @@
 
           <!-- Header Nama Hari -->
           <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center font-extrabold text-xs mb-2.5">
-            <span class="text-rose-600 py-1.5 rounded-xl bg-rose-50/80">Minggu</span>
-            <span class="text-slate-500 py-1.5">Senin</span>
-            <span class="text-slate-500 py-1.5">Selasa</span>
-            <span class="text-slate-500 py-1.5">Rabu</span>
-            <span class="text-slate-500 py-1.5">Kamis</span>
-            <span class="text-slate-500 py-1.5">Jumat</span>
-            <span class="text-indigo-600 py-1.5 rounded-xl bg-indigo-50/60">Sabtu</span>
+            <span class="text-rose-600 dark:text-rose-400 py-1.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40">Minggu</span>
+            <span class="text-slate-500 dark:text-slate-400 py-1.5">Senin</span>
+            <span class="text-slate-500 dark:text-slate-400 py-1.5">Selasa</span>
+            <span class="text-slate-500 dark:text-slate-400 py-1.5">Rabu</span>
+            <span class="text-slate-500 dark:text-slate-400 py-1.5">Kamis</span>
+            <span class="text-slate-500 dark:text-slate-400 py-1.5">Jumat</span>
+            <span class="text-indigo-600 dark:text-indigo-400 py-1.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40">Sabtu</span>
           </div>
 
           <!-- Grid Sel Tanggal Kalender -->
@@ -287,27 +322,27 @@
         </div>
 
         <!-- Kartu Banner Hari Libur Nasional pada Tanggal Terpilih -->
-        <div id="holidayInfoCard" class="bg-gradient-to-r from-rose-50 to-orange-50/60 border border-rose-200/80 rounded-2xl p-3.5 flex items-start gap-3 hidden transition-all animate-fade-in">
+        <div id="holidayInfoCard" class="bg-gradient-to-r from-rose-50 to-orange-50/60 dark:from-rose-950/50 dark:to-orange-950/30 border border-rose-200/80 dark:border-rose-800/60 rounded-2xl p-3.5 flex items-start gap-3 hidden transition-all animate-fade-in">
           <div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
             <i data-lucide="party-popper" class="w-4 h-4"></i>
           </div>
           <div>
-            <h4 id="holidayTypeBadge" class="text-[10px] font-black text-rose-700 uppercase tracking-widest">Hari Libur Nasional</h4>
-            <p id="holidayInfoText" class="text-sm font-bold text-rose-950 mt-0.5 leading-snug"></p>
+            <h4 id="holidayTypeBadge" class="text-[10px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-widest">Hari Libur Nasional</h4>
+            <p id="holidayInfoText" class="text-sm font-bold text-rose-950 dark:text-rose-100 mt-0.5 leading-snug"></p>
           </div>
         </div>
 
         <!-- Box Daftar Hari Libur & Cuti Bulan Ini -->
-        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 dark:border-slate-800 transition-colors">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-            <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+            <h4 class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="calendar-days" class="w-4 h-4 text-rose-500"></i>
               <span>Daftar Libur Nasional & Cuti Bersama <span id="currentMonthNameSpan">November</span></span>
             </h4>
             <!-- Indikator & Hitung Mundur Libur / Agenda Penting Terdekat -->
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span id="nextHolidayCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80"></span>
-              <span id="nextImportantAgendaCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/80"></span>
+              <span id="nextHolidayCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"></span>
+              <span id="nextImportantAgendaCountdown" class="hidden text-[10px] font-bold px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60"></span>
             </div>
           </div>
           <div id="monthlyHolidayList" class="space-y-2 max-h-[180px] overflow-y-auto custom-scroll pr-1">
@@ -318,39 +353,47 @@
 
       <!-- SISI KANAN: PANEL AGENDA & INPUT -->
       <div class="lg:col-span-5 xl:col-span-4 flex flex-col space-y-4">
-        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 flex-1 flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 dark:border-slate-800 flex-1 flex flex-col justify-between transition-colors">
           <div>
             <!-- Header Rincian Tanggal -->
-            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 gap-2">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 gap-2">
               <div>
-                <span class="text-[10px] font-black uppercase text-brand-600 tracking-widest">Catatan Tanggal</span>
-                <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 mt-0.5 leading-snug">-</h3>
-                <p id="selectedJavaneseHijriDisplay" class="text-[11px] font-bold text-amber-700 mt-0.5 leading-snug">-</p>
+                <span class="text-[10px] font-black uppercase text-brand-600 dark:text-brand-400 tracking-widest">Catatan Tanggal</span>
+                <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5 leading-snug">-</h3>
+                <p id="selectedJavaneseHijriDisplay" class="text-[11px] font-bold text-amber-700 dark:text-amber-400 mt-0.5 leading-snug">-</p>
               </div>
-              <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-xl text-xs font-extrabold shrink-0">
+              <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800/60 rounded-xl text-xs font-extrabold shrink-0">
                 0 Catatan
               </span>
             </div>
 
             <!-- Formulir Tambah / Edit Catatan -->
-            <form onsubmit="handleSaveAgenda(event)" class="mt-4 space-y-2.5 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80">
+            <form onsubmit="handleSaveAgenda(event)" class="mt-4 space-y-2.5 bg-slate-50/90 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
               <div>
                 <input type="text" id="agendaTitleInput" required placeholder="Judul kegiatan..."
-                  class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
               </div>
               <div>
                 <textarea id="agendaNoteInput" rows="2" placeholder="Catatan tambahan..."
-                  class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none"></textarea>
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none"></textarea>
               </div>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-3 gap-2">
                 <input type="time" id="agendaTimeInput"
-                  class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <select id="agendaCategoryInput"
-                  class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
                   <option value="Kerja">💼 Kerja</option>
                   <option value="Pribadi">👤 Pribadi</option>
                   <option value="Penting">⚡ Penting</option>
                   <option value="Santai">🌴 Santai</option>
+                </select>
+                <select id="agendaRepeatInput" title="Pengulangan Agenda"
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                  <option value="none">🔁 Sekali</option>
+                  <option value="daily">📅 Harian</option>
+                  <option value="weekly">🗓️ Mingguan</option>
+                  <option value="monthly">📆 Bulanan</option>
+                  <option value="yearly">🎂 Tahunan</option>
                 </select>
               </div>
               <div class="flex items-center gap-2 pt-0.5">
@@ -360,7 +403,7 @@
                   <span id="submitBtnText">Simpan Catatan</span>
                 </button>
                 <button type="button" id="cancelEditBtn" onclick="cancelEditAgenda()"
-                  class="hidden touch-target px-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2.5 rounded-xl active:scale-[0.98] transition">
+                  class="hidden touch-target px-3.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold py-2.5 rounded-xl active:scale-[0.98] transition">
                   Batal
                 </button>
               </div>
@@ -370,9 +413,13 @@
             <div class="mt-5">
               <div class="flex items-center justify-between mb-2.5">
                 <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-600"></i>
+                  <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i>
                   <span>Daftar Kegiatan</span>
                 </h4>
+                <button type="button" onclick="toggleGlobalSearch(true)" class="text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+                  <i data-lucide="globe" class="w-3 h-3"></i>
+                  <span>Cari semua tanggal</span>
+                </button>
               </div>
 
               <!-- Fitur Pencarian & Filter Kategori -->
@@ -380,14 +427,14 @@
                 <div class="relative">
                   <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
                   <input type="text" id="searchAgendaInput" oninput="renderAgendaList()" placeholder="Cari kegiatan di tanggal ini..."
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                    class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-800 transition">
                 </div>
                 <div class="flex items-center gap-1 overflow-x-auto pb-1 custom-scroll text-[11px]">
                   <button type="button" onclick="setCategoryFilter('Semua')" id="filterBtn-Semua" class="px-2.5 py-1 rounded-lg font-bold bg-brand-600 text-white shrink-0 transition">Semua</button>
-                  <button type="button" onclick="setCategoryFilter('Kerja')" id="filterBtn-Kerja" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Kerja</button>
-                  <button type="button" onclick="setCategoryFilter('Pribadi')" id="filterBtn-Pribadi" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Pribadi</button>
-                  <button type="button" onclick="setCategoryFilter('Penting')" id="filterBtn-Penting" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Penting</button>
-                  <button type="button" onclick="setCategoryFilter('Santai')" id="filterBtn-Santai" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition">Santai</button>
+                  <button type="button" onclick="setCategoryFilter('Kerja')" id="filterBtn-Kerja" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 transition">Kerja</button>
+                  <button type="button" onclick="setCategoryFilter('Pribadi')" id="filterBtn-Pribadi" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 transition">Pribadi</button>
+                  <button type="button" onclick="setCategoryFilter('Penting')" id="filterBtn-Penting" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 transition">Penting</button>
+                  <button type="button" onclick="setCategoryFilter('Santai')" id="filterBtn-Santai" class="px-2.5 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 transition">Santai</button>
                 </div>
               </div>
 
@@ -411,16 +458,201 @@
     const API_ENDPOINT = "/api/agendas";
     const HOLIDAYS_API_ENDPOINT = "https://api-harilibur.vercel.app/api";
     const SESSION_KEY_STORAGE = "calendar_neon_access_key";
+    const THEME_STORAGE_KEY = "calendar_itp_dark_mode";
 
     let activeAccessKey = "";
     let agendas = {}; 
     let editingAgendaId = null;
+    let editingAgendaOriginDate = null;
     let activeCategoryFilter = "Semua";
     let holidaysCache = {};
     let fetchingHolidayYears = {};
     let isSyncing = false;
     let pollingInterval = null;
     let clockInterval = null;
+
+    // ================= DARK MODE ENGINE =================
+    function applyDarkMode(isDark) {
+      const htmlEl = document.documentElement;
+      const iconEl = document.getElementById("darkModeIcon");
+      if (isDark) {
+        htmlEl.classList.add("dark");
+        if (iconEl) iconEl.setAttribute("data-lucide", "sun");
+      } else {
+        htmlEl.classList.remove("dark");
+        if (iconEl) iconEl.setAttribute("data-lucide", "moon");
+      }
+      lucide.createIcons();
+    }
+
+    function toggleDarkMode() {
+      const isCurrentlyDark = document.documentElement.classList.contains("dark");
+      const nextState = !isCurrentlyDark;
+      localStorage.setItem(THEME_STORAGE_KEY, nextState ? "1" : "0");
+      applyDarkMode(nextState);
+    }
+
+    (function initThemeEarly() {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "1" || (saved === null && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+
+    // ================= HELPER SANITASI & AGENDA BERULANG =================
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function parseDateKeyLocal(dateKey) {
+      const [y, m, d] = dateKey.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function doesRecurringMatchDate(item, originDateKey, targetDateKey) {
+      const repeat = item.repeat || "none";
+      if (repeat === "none") return false;
+      if (targetDateKey <= originDateKey) return false;
+
+      const originDate = parseDateKeyLocal(originDateKey);
+      const targetDate = parseDateKeyLocal(targetDateKey);
+
+      if (repeat === "daily") {
+        return true;
+      }
+      if (repeat === "weekly") {
+        return originDate.getDay() === targetDate.getDay();
+      }
+      if (repeat === "monthly") {
+        return originDate.getDate() === targetDate.getDate();
+      }
+      if (repeat === "yearly") {
+        return originDate.getDate() === targetDate.getDate() && originDate.getMonth() === targetDate.getMonth();
+      }
+      return false;
+    }
+
+    function getAgendasForDate(targetDateKey) {
+      const directList = (agendas[targetDateKey] || []).map(item => ({
+        ...item,
+        originDate: targetDateKey,
+        isRecurringInstance: false
+      }));
+
+      const recurringList = [];
+      Object.keys(agendas).forEach(originKey => {
+        if (originKey >= targetDateKey) return;
+        const list = agendas[originKey] || [];
+        list.forEach(item => {
+          if (doesRecurringMatchDate(item, originKey, targetDateKey)) {
+            const completedDates = item.completedDates || [];
+            recurringList.push({
+              ...item,
+              done: completedDates.includes(targetDateKey),
+              originDate: originKey,
+              isRecurringInstance: true
+            });
+          }
+        });
+      });
+
+      return [...directList, ...recurringList];
+    }
+
+    const REPEAT_LABELS = {
+      none: "",
+      daily: "Harian",
+      weekly: "Mingguan",
+      monthly: "Bulanan",
+      yearly: "Tahunan"
+    };
+
+    // ================= MODAL PENCARIAN GLOBAL =================
+    function toggleGlobalSearch(open) {
+      const modal = document.getElementById("globalSearchModal");
+      const input = document.getElementById("globalSearchInput");
+      if (!modal) return;
+      if (open) {
+        const localQuery = document.getElementById("searchAgendaInput")?.value || "";
+        modal.classList.remove("hidden");
+        if (input) {
+          if (localQuery && !input.value) input.value = localQuery;
+          setTimeout(() => input.focus(), 50);
+        }
+        renderGlobalSearchResults();
+        lucide.createIcons();
+      } else {
+        modal.classList.add("hidden");
+      }
+    }
+
+    function renderGlobalSearchResults() {
+      const container = document.getElementById("globalSearchResults");
+      const input = document.getElementById("globalSearchInput");
+      if (!container) return;
+
+      const query = (input ? input.value : "").trim().toLowerCase();
+      let allItems = [];
+
+      Object.keys(agendas).sort().forEach(dateKey => {
+        (agendas[dateKey] || []).forEach(item => {
+          allItems.push({ ...item, dateKey });
+        });
+      });
+
+      const filtered = allItems.filter(item => {
+        if (!query) return true;
+        return (
+          (item.title && item.title.toLowerCase().includes(query)) ||
+          (item.note && item.note.toLowerCase().includes(query)) ||
+          (item.category && item.category.toLowerCase().includes(query)) ||
+          item.dateKey.includes(query)
+        );
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400">
+            <i data-lucide="search-x" class="w-6 h-6 mx-auto mb-2 text-slate-300 dark:text-slate-600"></i>
+            <p class="text-xs font-semibold">${allItems.length === 0 ? "Belum ada catatan tersimpan di kalender." : "Tidak ditemukan kegiatan yang cocok."}</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = "";
+      filtered.slice(0, 50).forEach(item => {
+        const [y, m, d] = item.dateKey.split("-").map(Number);
+        const dateLabel = `${d} ${monthsIndo[m - 1]} ${y}`;
+        const repeatTag = item.repeat && item.repeat !== "none" ? ` • 🔁 ${REPEAT_LABELS[item.repeat]}` : "";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.onclick = () => {
+          toggleGlobalSearch(false);
+          selectDate(item.dateKey);
+        };
+        btn.className = "w-full text-left p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-brand-50 dark:hover:bg-brand-950/50 border border-slate-200/80 dark:border-slate-700/80 transition flex items-center justify-between gap-3";
+        btn.innerHTML = `
+          <div class="overflow-hidden">
+            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate ${item.done ? 'line-through opacity-60' : ''}">${escapeHTML(item.title)}</p>
+            ${item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${escapeHTML(item.note)}</p>` : ''}
+            <p class="text-[10px] font-bold text-brand-600 dark:text-brand-400 mt-1">📅 ${dateLabel} • ⏰ ${escapeHTML(item.time || '--:--')} • ${escapeHTML(item.category)}${repeatTag}</p>
+          </div>
+          <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-400 shrink-0"></i>
+        `;
+        container.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
 
     // ================= PENGHITUNG DURASI (START / PAUSE / STOP / RESET) =================
     let swState = "idle"; // "idle" | "running" | "paused" | "stopped"
@@ -600,7 +832,6 @@
 
     // ================= PASARAN JAWA & TANGGAL HIJRIAH =================
     const PASARAN_JAWA = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
-    // Anchor: 1 Januari 2024 = Senin Pahing (index 1)
     const PASARAN_ANCHOR_UTC = Date.UTC(2024, 0, 1);
     const PASARAN_ANCHOR_INDEX = 1;
 
@@ -628,7 +859,6 @@
             month: "long",
             year: "numeric"
           });
-          // Test formatting
           fullFmt.format(new Date(2026, 10, 19));
           return { fullFmt, dayMonthFmt, monthYearFmt };
         } catch (e) {
@@ -703,6 +933,10 @@
         const modal = document.getElementById("clockExpandModal");
         if (modal && !modal.classList.contains("hidden")) {
           toggleClockExpand(false);
+        }
+        const searchModal = document.getElementById("globalSearchModal");
+        if (searchModal && !searchModal.classList.contains("hidden")) {
+          toggleGlobalSearch(false);
         }
       }
     });
@@ -1005,7 +1239,7 @@
 
       if (monthHolidays.length === 0) {
         container.innerHTML = `
-          <div class="p-3.5 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl text-xs font-medium">
+          <div class="p-3.5 text-center text-slate-400 bg-slate-50/80 dark:bg-slate-800/60 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium">
             Tidak ada hari libur nasional atau cuti bersama di bulan ini.
           </div>
         `;
@@ -1014,12 +1248,12 @@
 
       monthHolidays.forEach(h => {
         const item = document.createElement("div");
-        item.className = "flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100 rounded-2xl border border-slate-200/60 transition cursor-pointer";
+        item.className = "flex items-center justify-between p-2.5 bg-slate-50/80 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 transition cursor-pointer";
         item.onclick = () => selectDate(h.dateKey);
 
         const badgeClass = h.type === "national" 
-          ? "bg-rose-100 text-rose-700 border-rose-200" 
-          : "bg-amber-100 text-amber-700 border-amber-200";
+          ? "bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60" 
+          : "bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60";
         const badgeLabel = h.type === "national" ? "Libur Nasional" : "Cuti Bersama";
 
         const [hy, hm, hd] = h.dateKey.split('-').map(Number);
@@ -1029,11 +1263,11 @@
 
         item.innerHTML = `
           <div class="flex items-center gap-2.5 overflow-hidden">
-            <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 font-black text-slate-800 text-xs shadow-xs">
+            <div class="w-8 h-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center shrink-0 font-black text-slate-800 dark:text-slate-100 text-xs shadow-xs">
               <span>${h.date}</span>
             </div>
             <div class="truncate">
-              <p class="text-xs font-bold text-slate-800 truncate">${h.name}</p>
+              <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${h.name}</p>
               <p class="text-[10px] text-slate-400 font-semibold truncate">${monthsIndo[currentMonth]} ${currentYear} • ${hPasaran}${hHijri.shortLabel ? ` • ${hHijri.shortLabel} H` : ''}</p>
             </div>
           </div>
@@ -1064,7 +1298,7 @@
       for (let i = firstDayIndex - 1; i >= 0; i--) {
         const d = prevTotalDays - i;
         const cell = document.createElement("div");
-        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 font-medium text-xs sm:text-sm select-none";
+        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 dark:text-slate-700 font-medium text-xs sm:text-sm select-none";
         cell.textContent = d;
         calendarGrid.appendChild(cell);
       }
@@ -1082,8 +1316,9 @@
 
         const isToday = (dateKey === todayStr);
         const isSelected = (dateKey === selectedDateStr);
-        const dayAgendas = agendas[dateKey] || [];
+        const dayAgendas = getAgendasForDate(dateKey);
         const hasAgenda = dayAgendas.length > 0;
+        const hasRecurringOnly = hasAgenda && dayAgendas.every(a => a.isRecurringInstance);
 
         const pasaran = getPasaranJawa(cellDate);
         const hijri = getHijriInfo(cellDate);
@@ -1097,20 +1332,20 @@
         if (isSelected) {
           cellClasses += "bg-brand-600 text-white border-brand-600 shadow-brand-glow z-10 font-black";
         } else if (isToday) {
-          cellClasses += "bg-brand-50 border-2 border-brand-500 text-brand-700 font-extrabold";
+          cellClasses += "bg-brand-50 dark:bg-brand-950/60 border-2 border-brand-500 text-brand-700 dark:text-brand-300 font-extrabold";
         } else if (holiday) {
-          cellClasses += "text-rose-600 bg-rose-50/70 border-rose-100 hover:bg-rose-100 font-extrabold";
+          cellClasses += "text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-950/70 font-extrabold";
         } else if (isSunday) {
-          cellClasses += "text-rose-600 border-transparent hover:bg-rose-50 font-bold";
+          cellClasses += "text-rose-600 dark:text-rose-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold";
         } else if (dayOfWeek === 6) {
-          cellClasses += "text-indigo-600 border-transparent hover:bg-indigo-50 font-bold";
+          cellClasses += "text-indigo-600 dark:text-indigo-400 border-transparent hover:bg-indigo-50 dark:hover:bg-indigo-950/40 font-bold";
         } else {
-          cellClasses += "text-slate-700 border-transparent hover:bg-slate-100 font-semibold";
+          cellClasses += "text-slate-700 dark:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold";
         }
 
         const subMetaColor = isSelected
           ? "text-indigo-100"
-          : (holiday || isSunday ? "text-rose-500/80" : "text-slate-400");
+          : (holiday || isSunday ? "text-rose-500/80 dark:text-rose-400/80" : "text-slate-400 dark:text-slate-500");
 
         cell.className = cellClasses;
         cell.innerHTML = `
@@ -1124,7 +1359,10 @@
 
         if (hasAgenda) {
           const aDot = document.createElement("span");
-          aDot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-emerald-500'}`;
+          const dotColor = isSelected
+            ? 'bg-amber-300'
+            : (hasRecurringOnly ? 'bg-sky-500' : 'bg-emerald-500');
+          aDot.className = `w-1.5 h-1.5 rounded-full ${dotColor}`;
           dotContainer.appendChild(aDot);
         }
 
@@ -1135,7 +1373,7 @@
       const remainder = (7 - ((firstDayIndex + totalDays) % 7)) % 7;
       for (let next = 1; next <= remainder; next++) {
         const cell = document.createElement("div");
-        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 font-medium text-xs sm:text-sm select-none";
+        cell.className = "touch-target flex items-center justify-center p-2 text-slate-300 dark:text-slate-700 font-medium text-xs sm:text-sm select-none";
         cell.textContent = next;
         calendarGrid.appendChild(cell);
       }
@@ -1223,22 +1461,24 @@
         if (cat === category) {
           btn.className = "px-2.5 py-1 rounded-lg font-bold bg-brand-600 text-white shrink-0 transition shadow-xs";
         } else {
-          btn.className = "px-2.5 py-1 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition";
+          btn.className = "px-2.5 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 transition";
         }
       });
       renderAgendaList();
     }
 
-    function editAgenda(id) {
-      if (!agendas[selectedDateStr]) return;
-      const item = agendas[selectedDateStr].find(x => x.id === id);
+    function editAgenda(id, originDate = selectedDateStr) {
+      if (!agendas[originDate]) return;
+      const item = agendas[originDate].find(x => x.id === id);
       if (!item) return;
 
       editingAgendaId = id;
+      editingAgendaOriginDate = originDate;
       document.getElementById("agendaTitleInput").value = item.title || "";
       document.getElementById("agendaNoteInput").value = item.note || "";
       document.getElementById("agendaTimeInput").value = (item.time && item.time !== "--:--") ? item.time : "";
       document.getElementById("agendaCategoryInput").value = item.category || "Kerja";
+      document.getElementById("agendaRepeatInput").value = item.repeat || "none";
 
       document.getElementById("submitBtnText").textContent = "Update Catatan";
       document.getElementById("submitBtnIcon").setAttribute("data-lucide", "check-circle");
@@ -1251,10 +1491,12 @@
 
     function cancelEditAgenda() {
       editingAgendaId = null;
+      editingAgendaOriginDate = null;
       document.getElementById("agendaTitleInput").value = "";
       document.getElementById("agendaNoteInput").value = "";
       document.getElementById("agendaTimeInput").value = "";
       document.getElementById("agendaCategoryInput").value = "Kerja";
+      document.getElementById("agendaRepeatInput").value = "none";
 
       document.getElementById("submitBtnText").textContent = "Simpan Catatan";
       document.getElementById("submitBtnIcon").setAttribute("data-lucide", "plus-circle");
@@ -1269,6 +1511,7 @@
       const noteInput = document.getElementById("agendaNoteInput");
       const timeInput = document.getElementById("agendaTimeInput");
       const catInput = document.getElementById("agendaCategoryInput");
+      const repeatInput = document.getElementById("agendaRepeatInput");
       const submitBtn = document.getElementById("submitBtn");
 
       const title = titleInput.value.trim();
@@ -1276,22 +1519,25 @@
 
       submitBtn.disabled = true;
 
-      if (!agendas[selectedDateStr]) {
-        agendas[selectedDateStr] = [];
+      const targetKey = editingAgendaId && editingAgendaOriginDate ? editingAgendaOriginDate : selectedDateStr;
+      if (!agendas[targetKey]) {
+        agendas[targetKey] = [];
       }
 
       if (editingAgendaId) {
-        const index = agendas[selectedDateStr].findIndex(x => x.id === editingAgendaId);
+        const index = agendas[targetKey].findIndex(x => x.id === editingAgendaId);
         if (index !== -1) {
-          agendas[selectedDateStr][index] = {
-            ...agendas[selectedDateStr][index],
+          agendas[targetKey][index] = {
+            ...agendas[targetKey][index],
             title: title,
             note: noteInput.value.trim(),
             time: timeInput.value || "--:--",
-            category: catInput.value
+            category: catInput.value,
+            repeat: repeatInput ? repeatInput.value : "none"
           };
         }
         editingAgendaId = null;
+        editingAgendaOriginDate = null;
         document.getElementById("submitBtnText").textContent = "Simpan Catatan";
         document.getElementById("submitBtnIcon").setAttribute("data-lucide", "plus-circle");
         document.getElementById("cancelEditBtn").classList.add("hidden");
@@ -1302,6 +1548,7 @@
           note: noteInput.value.trim(),
           time: timeInput.value || "--:--",
           category: catInput.value,
+          repeat: repeatInput ? repeatInput.value : "none",
           done: false
         };
         agendas[selectedDateStr].push(newItem);
@@ -1310,6 +1557,7 @@
       titleInput.value = "";
       noteInput.value = "";
       timeInput.value = "";
+      if (repeatInput) repeatInput.value = "none";
 
       renderCalendar();
       renderAgendaList();
@@ -1319,11 +1567,20 @@
       if (ok) showToast("Catatan kegiatan berhasil disimpan!");
     }
 
-    async function toggleDone(id) {
-      if (!agendas[selectedDateStr]) return;
-      const item = agendas[selectedDateStr].find(x => x.id === id);
+    async function toggleDone(id, originDate = selectedDateStr, isRecurringInstance = false) {
+      if (!agendas[originDate]) return;
+      const item = agendas[originDate].find(x => x.id === id);
       if (item) {
-        item.done = !item.done;
+        if (isRecurringInstance) {
+          if (!Array.isArray(item.completedDates)) item.completedDates = [];
+          if (item.completedDates.includes(selectedDateStr)) {
+            item.completedDates = item.completedDates.filter(d => d !== selectedDateStr);
+          } else {
+            item.completedDates.push(selectedDateStr);
+          }
+        } else {
+          item.done = !item.done;
+        }
         renderCalendar();
         renderAgendaList();
         const ok = await pushCloudAgendas();
@@ -1331,12 +1588,12 @@
       }
     }
 
-    async function deleteAgenda(id) {
-      if (!agendas[selectedDateStr]) return;
+    async function deleteAgenda(id, originDate = selectedDateStr) {
+      if (!agendas[originDate]) return;
       if (editingAgendaId === id) cancelEditAgenda();
-      agendas[selectedDateStr] = agendas[selectedDateStr].filter(x => x.id !== id);
-      if (agendas[selectedDateStr].length === 0) {
-        delete agendas[selectedDateStr];
+      agendas[originDate] = agendas[originDate].filter(x => x.id !== id);
+      if (agendas[originDate].length === 0) {
+        delete agendas[originDate];
       }
       renderCalendar();
       renderAgendaList();
@@ -1350,7 +1607,7 @@
       const searchInput = document.getElementById("searchAgendaInput");
       const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
 
-      const allDayAgendas = agendas[selectedDateStr] || [];
+      const allDayAgendas = getAgendasForDate(selectedDateStr);
       badge.textContent = `${allDayAgendas.length} Catatan`;
 
       const filteredList = allDayAgendas.filter(item => {
@@ -1365,8 +1622,8 @@
 
       if (allDayAgendas.length === 0) {
         listContainer.innerHTML = `
-          <div class="p-6 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl">
-            <i data-lucide="calendar-x" class="w-6 h-6 mx-auto mb-2 text-slate-300"></i>
+          <div class="p-6 text-center text-slate-400 bg-slate-50/80 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+            <i data-lucide="calendar-x" class="w-6 h-6 mx-auto mb-2 text-slate-300 dark:text-slate-600"></i>
             <p class="text-xs font-semibold">Belum ada agenda pada tanggal tersebut</p>
           </div>
         `;
@@ -1376,8 +1633,8 @@
 
       if (filteredList.length === 0) {
         listContainer.innerHTML = `
-          <div class="p-5 text-center text-slate-400 bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl">
-            <i data-lucide="search-x" class="w-5 h-5 mx-auto mb-1.5 text-slate-300"></i>
+          <div class="p-5 text-center text-slate-400 bg-slate-50/80 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+            <i data-lucide="search-x" class="w-5 h-5 mx-auto mb-1.5 text-slate-300 dark:text-slate-600"></i>
             <p class="text-xs font-semibold">Tidak ada agenda yang cocok dengan filter</p>
           </div>
         `;
@@ -1386,39 +1643,43 @@
       }
 
       const catBadges = {
-        'Kerja': 'bg-blue-50 text-blue-700 border-blue-200',
-        'Pribadi': 'bg-purple-50 text-purple-700 border-purple-200',
-        'Penting': 'bg-rose-50 text-rose-700 border-rose-200',
-        'Santai': 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        'Kerja': 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60',
+        'Pribadi': 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60',
+        'Penting': 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60',
+        'Santai': 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
       };
 
       filteredList.forEach(item => {
         const itemEl = document.createElement("div");
-        const bStyle = catBadges[item.category] || 'bg-slate-100 text-slate-700 border-slate-200';
-        const noteHtml = item.note ? `<p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2 ${item.done ? 'line-through opacity-75' : ''}">${item.note}</p>` : '';
+        const bStyle = catBadges[item.category] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+        const noteHtml = item.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 ${item.done ? 'line-through opacity-75' : ''}">${escapeHTML(item.note)}</p>` : '';
+        const repeatBadge = item.repeat && item.repeat !== "none"
+          ? `<span class="px-1.5 py-0.2 rounded-md border font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/60">🔁 ${REPEAT_LABELS[item.repeat]}</span>`
+          : '';
         const isEditing = (editingAgendaId === item.id);
-        itemEl.className = `animate-fade-in flex items-center justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-brand-300 shadow-xs')}`;
+        itemEl.className = `animate-fade-in flex items-center justify-between p-3 rounded-2xl border transition ${isEditing ? 'bg-brand-50/60 dark:bg-brand-950/50 border-brand-400 ring-1 ring-brand-400' : (item.done ? 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60' : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80 hover:border-brand-300 dark:hover:border-brand-600 shadow-xs')}`;
         
         itemEl.innerHTML = `
           <div class="flex items-center gap-2.5 overflow-hidden flex-1">
-            <button type="button" onclick="toggleDone('${item.id}')" class="w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${item.done ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 hover:border-brand-500'}">
+            <button type="button" onclick="toggleDone('${item.id}', '${item.originDate}', ${item.isRecurringInstance})" class="w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${item.done ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 dark:border-slate-600 hover:border-brand-500'}">
               ${item.done ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ''}
             </button>
             <div class="truncate flex-1">
-              <p class="text-xs sm:text-sm font-bold text-slate-800 truncate ${item.done ? 'line-through text-slate-400' : ''}">${item.title}</p>
+              <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate ${item.done ? 'line-through text-slate-400' : ''}">${escapeHTML(item.title)}</p>
               ${noteHtml}
-              <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-1">
-                <span>⏰ ${item.time}</span>
+              <div class="flex items-center flex-wrap gap-1.5 text-[10px] text-slate-400 font-semibold mt-1">
+                <span>⏰ ${escapeHTML(item.time)}</span>
                 <span>•</span>
-                <span class="px-1.5 py-0.2 rounded-md border font-bold ${bStyle}">${item.category}</span>
+                <span class="px-1.5 py-0.2 rounded-md border font-bold ${bStyle}">${escapeHTML(item.category)}</span>
+                ${repeatBadge}
               </div>
             </div>
           </div>
           <div class="flex items-center shrink-0 ml-1.5">
-            <button type="button" onclick="editAgenda('${item.id}')" class="p-2 touch-target text-slate-300 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition flex items-center justify-center" title="Edit">
+            <button type="button" onclick="editAgenda('${item.id}', '${item.originDate}')" class="p-2 touch-target text-slate-300 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/60 transition flex items-center justify-center" title="Edit">
               <i data-lucide="pencil" class="w-4 h-4"></i>
             </button>
-            <button type="button" onclick="deleteAgenda('${item.id}')" class="p-2 touch-target text-slate-300 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition flex items-center justify-center" title="Hapus">
+            <button type="button" onclick="deleteAgenda('${item.id}', '${item.originDate}')" class="p-2 touch-target text-slate-300 dark:text-slate-500 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition flex items-center justify-center" title="Hapus">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1488,6 +1749,7 @@
     function unlockApp() {
       document.getElementById("loginOverlay").classList.add("hidden");
       document.getElementById("appContainer").classList.remove("hidden");
+      applyDarkMode(document.documentElement.classList.contains("dark"));
       lucide.createIcons();
       renderCalendar();
       updateSelectedDateUI();
@@ -1515,6 +1777,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       initYearSelector();
+      applyDarkMode(document.documentElement.classList.contains("dark"));
       lucide.createIcons();
       selectedDateStr = toDateKey(todayObj);
       updateLiveClock();
