@@ -120,8 +120,8 @@
   </div>
 
   <!-- ================= MODAL FULLSCREEN JAM & HARI REAL-TIME ================= -->
-  <div id="clockExpandModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-2xl text-white flex flex-col justify-between p-6 sm:p-10 transition-all animate-fade-in">
-    <div class="flex items-center justify-between max-w-5xl w-full mx-auto">
+  <div id="clockExpandModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-2xl text-white flex flex-col justify-between p-5 sm:p-10 transition-all animate-fade-in overflow-y-auto">
+    <div class="flex items-center justify-between max-w-5xl w-full mx-auto shrink-0">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-brand-glow">
           <i data-lucide="clock" class="w-4 h-4 text-white"></i>
@@ -137,16 +137,63 @@
       </button>
     </div>
 
-    <div class="flex-1 flex flex-col items-center justify-center text-center my-auto select-none">
-      <p id="expandedClockDate" class="text-base sm:text-2xl font-extrabold text-brand-300 tracking-wide mb-3 sm:mb-5">-</p>
+    <div class="flex-1 flex flex-col items-center justify-center text-center my-auto py-4 select-none">
+      <p id="expandedClockDate" class="text-base sm:text-2xl font-extrabold text-brand-300 tracking-wide mb-2 sm:mb-4">-</p>
       <div class="flex items-baseline justify-center gap-2 sm:gap-4 font-black tracking-tight tabular-nums">
         <span id="expandedClockMain" class="text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-lg">00:00</span>
-        <span id="expandedClockSec" class="text-3xl sm:text-5xl md:text-6xl text-brand-400 font-extrabold">00</span>
+        <span id="expandedClockSec" class="text-3xl sm:text-5xl md:text-6xl text-brand-400 font-extrabold">:00</span>
       </div>
-      <p id="expandedClockSub" class="text-xs sm:text-base font-bold text-emerald-400 mt-4 sm:mt-6 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full">-</p>
+      <p id="expandedClockSub" class="text-xs sm:text-base font-bold text-emerald-400 mt-3 sm:mt-5 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full">-</p>
+
+      <!-- Penghitung Durasi Waktu (Start / Pause / Stop & Hasil) -->
+      <div class="mt-6 sm:mt-8 w-full max-w-md bg-white/[0.06] border border-white/15 rounded-3xl p-4 sm:p-5 backdrop-blur-md">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+            <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
+            <span>Penghitung Durasi (Berapa Lama)</span>
+          </span>
+          <span id="swStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300">Siap</span>
+        </div>
+
+        <!-- Tampilan Durasi Berjalan -->
+        <div id="swElapsedDisplay" class="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight my-1">
+          00:00:00
+        </div>
+        <p id="swHumanSummary" class="text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]">
+          Tekan Start untuk mulai menghitung
+        </p>
+
+        <!-- Detail Jam Mulai & Selesai -->
+        <div id="swLogDetail" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-[11px] font-semibold text-slate-300 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span id="swStartTimeLabel">Mulai: --:--</span>
+          <span>•</span>
+          <span id="swEndTimeLabel">Selesai: --:--</span>
+        </div>
+
+        <!-- Tombol Kontrol Start, Pause, Stop -->
+        <div class="grid grid-cols-3 gap-2 mt-4">
+          <button type="button" id="swStartBtn" onclick="startDurationTimer()"
+            class="touch-target py-2.5 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Start</span>
+          </button>
+
+          <button type="button" id="swPauseBtn" onclick="pauseDurationTimer()" disabled
+            class="touch-target py-2.5 px-3 rounded-2xl bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Pause</span>
+          </button>
+
+          <button type="button" id="swStopBtn" onclick="stopDurationTimer()" disabled
+            class="touch-target py-2.5 px-3 rounded-2xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:pointer-events-none text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Stop</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="text-center text-[11px] text-slate-500 font-semibold">
+    <div class="text-center text-[11px] text-slate-500 font-semibold shrink-0">
       Tekan <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-slate-300">ESC</kbd> atau tombol tutup untuk kembali ke kalender
     </div>
   </div>
@@ -373,6 +420,174 @@
     let pollingInterval = null;
     let clockInterval = null;
 
+    // ================= PENGHITUNG DURASI (START / PAUSE / STOP) =================
+    let swState = "idle"; // "idle" | "running" | "paused" | "stopped"
+    let swAccumulatedMs = 0;
+    let swLastResumeTimestamp = null;
+    let swFirstStartTime = null;
+    let swStopTime = null;
+    let swTimerInterval = null;
+
+    function formatClockHHMM(dateObj) {
+      if (!dateObj) return "--:--";
+      const hh = String(dateObj.getHours()).padStart(2, "0");
+      const mm = String(dateObj.getMinutes()).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    function formatClockHHMMSS(dateObj) {
+      if (!dateObj) return "--:--:--";
+      const hh = String(dateObj.getHours()).padStart(2, "0");
+      const mm = String(dateObj.getMinutes()).padStart(2, "0");
+      const ss = String(dateObj.getSeconds()).padStart(2, "0");
+      return `${hh}:${mm}:${ss}`;
+    }
+
+    function formatDurationHuman(totalMs, startDate, endDate) {
+      const totalSeconds = Math.floor(totalMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      // Jika sudah Stop dan ada selisih menit murni atau sesuai jam mulai-selesai
+      let parts = [];
+      if (hours > 0) parts.push(`${hours} jam`);
+      if (minutes > 0) parts.push(`${minutes} menit`);
+      if (seconds > 0 || parts.length === 0) parts.push(`${seconds} detik`);
+
+      // Jika tepat kelipatan menit (misal start 13:08 stop 13:10 -> 2 menit)
+      if (hours === 0 && minutes > 0 && seconds === 0) {
+        return `${minutes} menit`;
+      }
+      if (hours > 0 && minutes === 0 && seconds === 0) {
+        return `${hours} jam`;
+      }
+      return parts.join(" ");
+    }
+
+    function getCurrentElapsedMs() {
+      if (swState === "running" && swLastResumeTimestamp) {
+        return swAccumulatedMs + (Date.now() - swLastResumeTimestamp);
+      }
+      return swAccumulatedMs;
+    }
+
+    function renderDurationTimerUI() {
+      const elapsedMs = getCurrentElapsedMs();
+      const totalSeconds = Math.floor(elapsedMs / 1000);
+      const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const ss = String(totalSeconds % 60).padStart(2, "0");
+
+      const displayEl = document.getElementById("swElapsedDisplay");
+      const summaryEl = document.getElementById("swHumanSummary");
+      const badgeEl = document.getElementById("swStatusBadge");
+      const logDetailEl = document.getElementById("swLogDetail");
+      const startLabelEl = document.getElementById("swStartTimeLabel");
+      const endLabelEl = document.getElementById("swEndTimeLabel");
+
+      const startBtn = document.getElementById("swStartBtn");
+      const pauseBtn = document.getElementById("swPauseBtn");
+      const stopBtn = document.getElementById("swStopBtn");
+
+      if (displayEl) displayEl.textContent = `${hh}:${mm}:${ss}`;
+
+      if (swState === "idle") {
+        if (badgeEl) {
+          badgeEl.textContent = "Siap";
+          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300";
+        }
+        if (summaryEl) summaryEl.textContent = "Tekan Start untuk mulai menghitung";
+        if (logDetailEl) logDetailEl.classList.add("hidden");
+        if (startBtn) startBtn.disabled = false;
+        if (pauseBtn) pauseBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = true;
+      } else if (swState === "running") {
+        if (badgeEl) {
+          badgeEl.textContent = "Berjalan";
+          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        }
+        if (summaryEl) summaryEl.textContent = `Berjalan: ${formatDurationHuman(elapsedMs)}`;
+        if (logDetailEl) logDetailEl.classList.remove("hidden");
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)} (${formatClockHHMMSS(swFirstStartTime)})`;
+        if (endLabelEl) endLabelEl.textContent = "Selesai: Berjalan...";
+        if (startBtn) startBtn.disabled = true;
+        if (pauseBtn) pauseBtn.disabled = false;
+        if (stopBtn) stopBtn.disabled = false;
+      } else if (swState === "paused") {
+        if (badgeEl) {
+          badgeEl.textContent = "Dijeda (Pause)";
+          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30";
+        }
+        if (summaryEl) summaryEl.textContent = `Dijeda pada: ${formatDurationHuman(elapsedMs)}`;
+        if (logDetailEl) logDetailEl.classList.remove("hidden");
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
+        if (endLabelEl) endLabelEl.textContent = "Status: Pause";
+        if (startBtn) startBtn.disabled = false;
+        if (pauseBtn) pauseBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = false;
+      } else if (swState === "stopped") {
+        if (badgeEl) {
+          badgeEl.textContent = "Selesai";
+          badgeEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        }
+        // Hitung selisih menit berdasarkan jam mulai & stop jika tanpa pause, atau dari total durasi
+        const diffClockMins = (swFirstStartTime && swStopTime)
+          ? Math.max(0, Math.round((swStopTime.getTime() - swFirstStartTime.getTime()) / 60000))
+          : Math.round(elapsedMs / 60000);
+        const exactHuman = formatDurationHuman(elapsedMs);
+        const resultText = (diffClockMins > 0 && exactHuman !== `${diffClockMins} menit`)
+          ? `Hasil: ${exactHuman} (${diffClockMins} menit)`
+          : `Hasil: ${exactHuman}`;
+
+        if (summaryEl) summaryEl.textContent = resultText;
+        if (logDetailEl) logDetailEl.classList.remove("hidden");
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
+        if (endLabelEl) endLabelEl.textContent = `Selesai: ${formatClockHHMM(swStopTime)}`;
+        if (startBtn) startBtn.disabled = false;
+        if (pauseBtn) pauseBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = true;
+      }
+    }
+
+    function startDurationTimer() {
+      const now = new Date();
+      if (swState === "idle" || swState === "stopped") {
+        swAccumulatedMs = 0;
+        swFirstStartTime = now;
+        swStopTime = null;
+      }
+      swState = "running";
+      swLastResumeTimestamp = Date.now();
+
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      swTimerInterval = setInterval(renderDurationTimerUI, 250);
+      renderDurationTimerUI();
+    }
+
+    function pauseDurationTimer() {
+      if (swState !== "running") return;
+      swAccumulatedMs += Date.now() - swLastResumeTimestamp;
+      swLastResumeTimestamp = null;
+      swState = "paused";
+
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      renderDurationTimerUI();
+    }
+
+    function stopDurationTimer() {
+      if (swState !== "running" && swState !== "paused") return;
+      if (swState === "running" && swLastResumeTimestamp) {
+        swAccumulatedMs += Date.now() - swLastResumeTimestamp;
+      }
+      swLastResumeTimestamp = null;
+      swStopTime = new Date();
+      swState = "stopped";
+
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      renderDurationTimerUI();
+    }
+
     // ================= PASARAN JAWA & TANGGAL HIJRIAH =================
     const PASARAN_JAWA = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
     // Anchor: 1 Januari 2024 = Senin Pahing (index 1)
@@ -471,6 +686,7 @@
       if (!modal) return;
       if (open) {
         updateLiveClock();
+        renderDurationTimerUI();
         modal.classList.remove("hidden");
         document.body.classList.add("overflow-hidden");
         lucide.createIcons();
@@ -1288,6 +1504,7 @@
     function lockApp() {
       if (pollingInterval) clearInterval(pollingInterval);
       if (clockInterval) clearInterval(clockInterval);
+      if (swTimerInterval) clearInterval(swTimerInterval);
       sessionStorage.removeItem(SESSION_KEY_STORAGE);
       activeAccessKey = "";
       agendas = {};
