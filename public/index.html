@@ -119,6 +119,38 @@
     </div>
   </div>
 
+  <!-- ================= MODAL FULLSCREEN JAM & HARI REAL-TIME ================= -->
+  <div id="clockExpandModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-2xl text-white flex flex-col justify-between p-6 sm:p-10 transition-all animate-fade-in">
+    <div class="flex items-center justify-between max-w-5xl w-full mx-auto">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-brand-glow">
+          <i data-lucide="clock" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xs font-black tracking-widest uppercase text-slate-300 block">KALENDER ITP</span>
+          <span class="text-[10px] font-semibold text-slate-400">Waktu Real-Time</span>
+        </div>
+      </div>
+      <button type="button" onclick="toggleClockExpand(false)" class="touch-target px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-2xl text-xs font-bold flex items-center gap-2 transition active:scale-95">
+        <i data-lucide="minimize-2" class="w-4 h-4"></i>
+        <span>Tutup Layar Penuh</span>
+      </button>
+    </div>
+
+    <div class="flex-1 flex flex-col items-center justify-center text-center my-auto select-none">
+      <p id="expandedClockDate" class="text-base sm:text-2xl font-extrabold text-brand-300 tracking-wide mb-3 sm:mb-5">-</p>
+      <div class="flex items-baseline justify-center gap-2 sm:gap-4 font-black tracking-tight tabular-nums">
+        <span id="expandedClockMain" class="text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-lg">00:00</span>
+        <span id="expandedClockSec" class="text-3xl sm:text-5xl md:text-6xl text-brand-400 font-extrabold">00</span>
+      </div>
+      <p id="expandedClockSub" class="text-xs sm:text-base font-bold text-emerald-400 mt-4 sm:mt-6 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full">-</p>
+    </div>
+
+    <div class="text-center text-[11px] text-slate-500 font-semibold">
+      Tekan <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-slate-300">ESC</kbd> atau tombol tutup untuk kembali ke kalender
+    </div>
+  </div>
+
   <!-- ================= APLIKASI UTAMA KALENDER ================= -->
   <div id="appContainer" class="hidden flex-1 flex flex-col">
     <!-- Header Navigasi Atas -->
@@ -165,6 +197,14 @@
                 </select>
               </div>
               <p id="hijriMonthSubtitle" class="text-[11px] font-bold text-emerald-700 mt-1"></p>
+
+              <!-- Widget Hari, Tanggal, Jam, Detik Real-Time (Klik untuk Expand 1 Halaman) -->
+              <button type="button" onclick="toggleClockExpand(true)" title="Klik untuk memperbesar jam menjadi satu halaman penuh"
+                class="mt-2 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-brand-50 border border-slate-200/90 hover:border-brand-300 text-left transition group active:scale-[0.99]">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-600 shrink-0"></i>
+                <span id="liveDateTimeInline" class="text-[11px] sm:text-xs font-bold text-slate-700 group-hover:text-brand-700 tabular-nums">-</span>
+                <i data-lucide="maximize-2" class="w-3 h-3 text-slate-400 group-hover:text-brand-600 ml-0.5 shrink-0"></i>
+              </button>
             </div>
 
             <!-- Tombol Navigasi -->
@@ -331,6 +371,7 @@
     let fetchingHolidayYears = {};
     let isSyncing = false;
     let pollingInterval = null;
+    let clockInterval = null;
 
     // ================= PASARAN JAWA & TANGGAL HIJRIAH =================
     const PASARAN_JAWA = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
@@ -382,13 +423,71 @@
       return { day, shortLabel, fullLabel };
     }
 
-   function getHijriMonthSpanLabel(year, month) {
-  if (!hijriFormatters) return "";
-  const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
-  const lastDay = new Date(year, month + 1, 0).getDate();
-  const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
-  return startH === endH ? `${startH}` : `${startH} – ${endH}`;
-}
+    function getHijriMonthSpanLabel(year, month) {
+      if (!hijriFormatters) return "";
+      const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
+      return startH === endH ? `${startH}` : `${startH} – ${endH}`;
+    }
+
+    // ================= JAM, DETIK, HARI & TANGGAL REAL-TIME =================
+    function updateLiveClock() {
+      const now = new Date();
+      const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const dayName = days[now.getDay()];
+      const d = now.getDate();
+      const mName = monthsIndo[now.getMonth()];
+      const y = now.getFullYear();
+
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+
+      const inlineEl = document.getElementById("liveDateTimeInline");
+      if (inlineEl) {
+        inlineEl.textContent = `${dayName}, ${d} ${mName} ${y} • ${hh}:${mm}:${ss}`;
+      }
+
+      const expDateEl = document.getElementById("expandedClockDate");
+      const expMainEl = document.getElementById("expandedClockMain");
+      const expSecEl = document.getElementById("expandedClockSec");
+      const expSubEl = document.getElementById("expandedClockSub");
+
+      if (expDateEl) expDateEl.textContent = `${dayName}, ${d} ${mName} ${y}`;
+      if (expMainEl) expMainEl.textContent = `${hh}:${mm}`;
+      if (expSecEl) expSecEl.textContent = `:${ss}`;
+      if (expSubEl) {
+        const pasaran = getPasaranJawa(now);
+        const hijri = getHijriInfo(now);
+        expSubEl.textContent = hijri.fullLabel
+          ? `${dayName} ${pasaran} • ${hijri.fullLabel}`
+          : `${dayName} ${pasaran}`;
+      }
+    }
+
+    function toggleClockExpand(open) {
+      const modal = document.getElementById("clockExpandModal");
+      if (!modal) return;
+      if (open) {
+        updateLiveClock();
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+        lucide.createIcons();
+      } else {
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const modal = document.getElementById("clockExpandModal");
+        if (modal && !modal.classList.contains("hidden")) {
+          toggleClockExpand(false);
+        }
+      }
+    });
 
     function setSyncStatus(status, text) {
       const dot = document.getElementById("syncIndicatorDot");
@@ -875,12 +974,12 @@
 
       document.getElementById("selectedDateDisplay").textContent = `${dayName}, ${d} ${monthsIndo[m]} ${y}`;
 
-     const subDisplay = document.getElementById("selectedJavaneseHijriDisplay");
-if (subDisplay) {
-  const jawaPart = `${dayName} ${pasaran}`;
-  const hijriPart = hijri.fullLabel ? `${hijri.fullLabel}` : "";
-  subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
-}
+      const subDisplay = document.getElementById("selectedJavaneseHijriDisplay");
+      if (subDisplay) {
+        const jawaPart = `${dayName} ${pasaran}`;
+        const hijriPart = hijri.fullLabel ? `${hijri.fullLabel}` : "";
+        subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
+      }
 
       const holidays = getHolidays(y);
       const holiday = holidays[selectedDateStr];
@@ -1175,6 +1274,10 @@ if (subDisplay) {
       renderCalendar();
       updateSelectedDateUI();
       renderAgendaList();
+      updateLiveClock();
+
+      if (clockInterval) clearInterval(clockInterval);
+      clockInterval = setInterval(updateLiveClock, 1000);
 
       if (pollingInterval) clearInterval(pollingInterval);
       pollingInterval = setInterval(() => {
@@ -1184,6 +1287,7 @@ if (subDisplay) {
 
     function lockApp() {
       if (pollingInterval) clearInterval(pollingInterval);
+      if (clockInterval) clearInterval(clockInterval);
       sessionStorage.removeItem(SESSION_KEY_STORAGE);
       activeAccessKey = "";
       agendas = {};
@@ -1194,11 +1298,12 @@ if (subDisplay) {
       initYearSelector();
       lucide.createIcons();
       selectedDateStr = toDateKey(todayObj);
+      updateLiveClock();
 
       const savedSessionKey = sessionStorage.getItem(SESSION_KEY_STORAGE);
       if (savedSessionKey) {
         activeAccessKey = savedSessionKey;
-      const ok = await fetchCloudAgendas(false);
+        const ok = await fetchCloudAgendas(false);
         if (ok) unlockApp();
       }
     });
