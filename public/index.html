@@ -273,7 +273,6 @@
                 <select id="yearPicker" onchange="changeYear(this.value)" class="text-sm sm:text-base font-extrabold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer transition">
                 </select>
               </div>
-              <p id="hijriMonthSubtitle" class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mt-1"></p>
 
               <!-- Widget Hari, Tanggal, Jam, Detik Real-Time (Klik untuk Expand 1 Halaman) -->
               <button type="button" onclick="toggleClockExpand(true)" title="Klik untuk memperbesar jam menjadi satu halaman penuh"
@@ -858,12 +857,8 @@
             day: "numeric",
             month: "short"
           });
-          const monthYearFmt = new Intl.DateTimeFormat(`id-ID-u-ca-${cal}`, {
-            month: "long",
-            year: "numeric"
-          });
           fullFmt.format(new Date(2026, 10, 19));
-          return { fullFmt, dayMonthFmt, monthYearFmt };
+          return { fullFmt, dayMonthFmt };
         } catch (e) {
           continue;
         }
@@ -879,14 +874,6 @@
       const dayPart = parts.find(p => p.type === "day");
       const day = dayPart ? dayPart.value : shortLabel.split(" ")[0];
       return { day, shortLabel, fullLabel };
-    }
-
-    function getHijriMonthSpanLabel(year, month) {
-      if (!hijriFormatters) return "";
-      const startH = hijriFormatters.monthYearFmt.format(new Date(year, month, 1));
-      const lastDay = new Date(year, month + 1, 0).getDate();
-      const endH = hijriFormatters.monthYearFmt.format(new Date(year, month, lastDay));
-      return startH === endH ? `${startH}` : `${startH} – ${endH}`;
     }
 
     // ================= JAM, DETIK, HARI & TANGGAL REAL-TIME =================
@@ -1303,13 +1290,9 @@
       const monthDisplay = document.getElementById("currentMonthDisplay");
       const yearPicker = document.getElementById("yearPicker");
       const calendarGrid = document.getElementById("calendarGrid");
-      const hijriSub = document.getElementById("hijriMonthSubtitle");
 
       monthDisplay.textContent = monthsIndo[currentMonth];
       yearPicker.value = currentYear;
-      if (hijriSub) {
-        hijriSub.textContent = getHijriMonthSpanLabel(currentYear, currentMonth);
-      }
       updateTodayNavButtonState();
       calendarGrid.innerHTML = "";
 
