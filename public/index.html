@@ -367,7 +367,7 @@
               <div>
                 <span class="text-[10px] font-black uppercase text-brand-600 dark:text-brand-400 tracking-widest">Catatan Tanggal</span>
                 <h3 id="selectedDateDisplay" class="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5 leading-snug">-</h3>
-                <p id="selectedJavaneseHijriDisplay" class="text-[11px] font-bold text-amber-700 dark:text-amber-400 mt-0.5 leading-snug">-</p>
+                <p id="selectedJavaneseHijriDisplay" class="inline-flex items-center gap-2 text-[11px] font-bold text-amber-700 dark:text-amber-400 mt-1 leading-snug">-</p>
               </div>
               <span id="agendaCountBadge" class="px-2.5 py-1 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800/60 rounded-xl text-xs font-extrabold shrink-0">
                 0 Catatan
@@ -1449,7 +1449,9 @@
       if (subDisplay) {
         const jawaPart = `${dayName} ${pasaran}`;
         const hijriPart = hijri.fullLabel ? `${hijri.fullLabel}` : "";
-        subDisplay.textContent = hijriPart ? `${jawaPart} • ${hijriPart}` : jawaPart;
+        subDisplay.innerHTML = hijriPart
+          ? `<span>${escapeHTML(jawaPart)}</span><span class="w-px h-3 bg-amber-600/35 dark:bg-amber-400/35 shrink-0"></span><span>${escapeHTML(hijriPart)}</span>`
+          : `<span>${escapeHTML(jawaPart)}</span>`;
       }
 
       const holidays = getHolidays(y);
