@@ -158,9 +158,7 @@
         <div id="swElapsedDisplay" class="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight my-1">
           00:00:00
         </div>
-        <p id="swHumanSummary" class="text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]">
-          Tekan Start untuk mulai menghitung
-        </p>
+        <p id="swHumanSummary" class="hidden text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]"></p>
 
         <!-- Detail Jam Mulai & Selesai -->
         <div id="swLogDetail" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-[11px] font-semibold text-slate-300 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
@@ -496,14 +494,20 @@
       if (displayEl) displayEl.textContent = `${hh}:${mm}:${ss}`;
 
       if (swState === "idle") {
-        if (summaryEl) summaryEl.textContent = "Tekan Start untuk mulai menghitung";
+        if (summaryEl) {
+          summaryEl.textContent = "";
+          summaryEl.classList.add("hidden");
+        }
         if (logDetailEl) logDetailEl.classList.add("hidden");
         if (startBtn) startBtn.disabled = false;
         if (pauseBtn) pauseBtn.disabled = true;
         if (stopBtn) stopBtn.disabled = true;
         if (resetBtn) resetBtn.disabled = true;
       } else if (swState === "running") {
-        if (summaryEl) summaryEl.textContent = `Berjalan: ${formatDurationHuman(elapsedMs)}`;
+        if (summaryEl) {
+          summaryEl.classList.remove("hidden");
+          summaryEl.textContent = `Berjalan: ${formatDurationHuman(elapsedMs)}`;
+        }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
         if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)} (${formatClockHHMMSS(swFirstStartTime)})`;
         if (endLabelEl) endLabelEl.textContent = "Selesai: Berjalan...";
@@ -512,7 +516,10 @@
         if (stopBtn) stopBtn.disabled = false;
         if (resetBtn) resetBtn.disabled = false;
       } else if (swState === "paused") {
-        if (summaryEl) summaryEl.textContent = `Dijeda pada: ${formatDurationHuman(elapsedMs)}`;
+        if (summaryEl) {
+          summaryEl.classList.remove("hidden");
+          summaryEl.textContent = `Dijeda pada: ${formatDurationHuman(elapsedMs)}`;
+        }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
         if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
         if (endLabelEl) endLabelEl.textContent = "Status: Pause";
@@ -529,7 +536,10 @@
           ? `Hasil: ${exactHuman} (${diffClockMins} menit)`
           : `Hasil: ${exactHuman}`;
 
-        if (summaryEl) summaryEl.textContent = resultText;
+        if (summaryEl) {
+          summaryEl.classList.remove("hidden");
+          summaryEl.textContent = resultText;
+        }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
         if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
         if (endLabelEl) endLabelEl.textContent = `Selesai: ${formatClockHHMM(swStopTime)}`;
