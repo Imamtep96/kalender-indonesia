@@ -57,12 +57,6 @@
       background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
                         radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
     }
-    /* Memastikan tampilan tetap gelap & penuh saat Native Fullscreen Browser aktif */
-    :fullscreen, :-webkit-full-screen {
-      background-color: #020617;
-      width: 100vw;
-      height: 100vh;
-    }
     .touch-target {
       min-height: 40px;
       min-width: 40px;
@@ -134,8 +128,8 @@
   </div>
 
   <!-- ================= MODAL FULLSCREEN JAM & HARI REAL-TIME ================= -->
-  <div id="clockExpandModal" class="fixed inset-0 z-50 hidden bg-slate-950 backdrop-blur-2xl text-white flex flex-col justify-between p-4 sm:p-8 lg:p-10 transition-all animate-fade-in overflow-y-auto">
-    <div class="flex items-center justify-between max-w-6xl w-full mx-auto shrink-0">
+  <div id="clockExpandModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-2xl text-white flex flex-col justify-between p-5 sm:p-10 transition-all animate-fade-in overflow-y-auto">
+    <div class="flex items-center justify-between max-w-5xl w-full mx-auto shrink-0">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-brand-glow">
           <i data-lucide="clock" class="w-4 h-4 text-white"></i>
@@ -151,124 +145,65 @@
       </button>
     </div>
 
-    <div class="flex-1 flex flex-col items-center justify-center text-center my-auto py-4 select-none w-full max-w-5xl mx-auto">
-      <p id="expandedClockDate" class="text-base sm:text-2xl font-extrabold text-brand-300 tracking-wide mb-2 sm:mb-3">-</p>
+    <div class="flex-1 flex flex-col items-center justify-center text-center my-auto py-4 select-none">
+      <p id="expandedClockDate" class="text-base sm:text-2xl font-extrabold text-brand-300 tracking-wide mb-2 sm:mb-4">-</p>
       <div class="flex items-baseline justify-center gap-2 sm:gap-4 font-black tracking-tight tabular-nums">
         <span id="expandedClockMain" class="text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-lg">00:00</span>
         <span id="expandedClockSec" class="text-3xl sm:text-5xl md:text-6xl text-brand-400 font-extrabold">:00</span>
       </div>
 
-      <!-- 2 Penghitung Durasi Waktu Responsif (Start / Pause / Stop / Reset & Hasil) -->
-      <div class="mt-6 sm:mt-8 w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-        
-        <!-- DURATION COUNTER 1 -->
-        <div class="w-full bg-white/[0.06] border border-white/15 rounded-3xl p-4 sm:p-5 backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-center mb-2">
-              <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1.5">
-                <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
-                <span>Duration Counter DRC Custody</span>
-              </span>
-            </div>
-
-            <!-- Tampilan Durasi Berjalan 1 -->
-            <div id="swElapsedDisplay1" class="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight my-1">
-              00:00:00
-            </div>
-            <p id="swHumanSummary1" class="hidden text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]"></p>
-
-            <!-- Detail Jam Mulai & Selesai 1 -->
-            <div id="swLogDetail1" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-[11px] font-semibold text-slate-300 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-              <span id="swStartTimeLabel1">Mulai: --:--</span>
-              <span>•</span>
-              <span id="swEndTimeLabel1">Selesai: --:--</span>
-            </div>
-          </div>
-
-          <!-- Tombol Kontrol 1 -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-            <button type="button" id="swStartBtn1" onclick="startDurationTimer(1)"
-              class="touch-target py-2.5 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Start</span>
-            </button>
-
-            <button type="button" id="swPauseBtn1" onclick="pauseDurationTimer(1)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Pause</span>
-            </button>
-
-            <button type="button" id="swStopBtn1" onclick="stopDurationTimer(1)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:pointer-events-none text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Stop</span>
-            </button>
-
-            <button type="button" id="swResetBtn1" onclick="resetDurationTimer(1)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-white/15 hover:bg-white/25 disabled:opacity-40 disabled:pointer-events-none text-white border border-white/15 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-              <span>Reset</span>
-            </button>
-          </div>
+      <!-- Penghitung Durasi Waktu (Start / Pause / Stop / Reset & Hasil) -->
+      <div class="mt-6 sm:mt-8 w-full max-w-md bg-white/[0.06] border border-white/15 rounded-3xl p-4 sm:p-5 backdrop-blur-md">
+        <div class="flex items-center justify-center mb-2">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1.5">
+            <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
+            <span>Duration Counter</span>
+          </span>
         </div>
 
-        <!-- DURATION COUNTER 2 -->
-        <div class="w-full bg-white/[0.06] border border-white/15 rounded-3xl p-4 sm:p-5 backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-center mb-2">
-              <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center justify-center gap-1.5">
-                <i data-lucide="timer" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>Duration Counter DRC WMS</span>
-              </span>
-            </div>
+        <!-- Tampilan Durasi Berjalan -->
+        <div id="swElapsedDisplay" class="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight my-1">
+          00:00:00
+        </div>
+        <p id="swHumanSummary" class="hidden text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]"></p>
 
-            <!-- Tampilan Durasi Berjalan 2 -->
-            <div id="swElapsedDisplay2" class="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight my-1">
-              00:00:00
-            </div>
-            <p id="swHumanSummary2" class="hidden text-xs sm:text-sm font-bold text-amber-300 min-h-[20px]"></p>
-
-            <!-- Detail Jam Mulai & Selesai 2 -->
-            <div id="swLogDetail2" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-[11px] font-semibold text-slate-300 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-              <span id="swStartTimeLabel2">Mulai: --:--</span>
-              <span>•</span>
-              <span id="swEndTimeLabel2">Selesai: --:--</span>
-            </div>
-          </div>
-
-          <!-- Tombol Kontrol 2 -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-            <button type="button" id="swStartBtn2" onclick="startDurationTimer(2)"
-              class="touch-target py-2.5 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Start</span>
-            </button>
-
-            <button type="button" id="swPauseBtn2" onclick="pauseDurationTimer(2)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Pause</span>
-            </button>
-
-            <button type="button" id="swStopBtn2" onclick="stopDurationTimer(2)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:pointer-events-none text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
-              <span>Stop</span>
-            </button>
-
-            <button type="button" id="swResetBtn2" onclick="resetDurationTimer(2)" disabled
-              class="touch-target py-2.5 px-3 rounded-2xl bg-white/15 hover:bg-white/25 disabled:opacity-40 disabled:pointer-events-none text-white border border-white/15 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-              <span>Reset</span>
-            </button>
-          </div>
+        <!-- Detail Jam Mulai & Selesai -->
+        <div id="swLogDetail" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-[11px] font-semibold text-slate-300 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span id="swStartTimeLabel">Mulai: --:--</span>
+          <span>•</span>
+          <span id="swEndTimeLabel">Selesai: --:--</span>
         </div>
 
+        <!-- Tombol Kontrol Start, Pause, Stop, Reset -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+          <button type="button" id="swStartBtn" onclick="startDurationTimer()"
+            class="touch-target py-2.5 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Start</span>
+          </button>
+
+          <button type="button" id="swPauseBtn" onclick="pauseDurationTimer()" disabled
+            class="touch-target py-2.5 px-3 rounded-2xl bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Pause</span>
+          </button>
+
+          <button type="button" id="swStopBtn" onclick="stopDurationTimer()" disabled
+            class="touch-target py-2.5 px-3 rounded-2xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:pointer-events-none text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Stop</span>
+          </button>
+
+          <button type="button" id="swResetBtn" onclick="resetDurationTimer()" disabled
+            class="touch-target py-2.5 px-3 rounded-2xl bg-white/15 hover:bg-white/25 disabled:opacity-40 disabled:pointer-events-none text-white border border-white/15 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="text-center text-[11px] text-slate-500 font-semibold shrink-0 pt-2">
+    <div class="text-center text-[11px] text-slate-500 font-semibold shrink-0">
       Tekan <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-slate-300">ESC</kbd> atau tombol tutup untuk kembali ke kalender
     </div>
   </div>
@@ -340,7 +275,7 @@
               </div>
 
               <!-- Widget Hari, Tanggal, Jam, Detik Real-Time (Desain Kapsul Elegan & Divider Vertikal) -->
-              <button type="button" onclick="toggleClockExpand(true)" title="Klik untuk memperbesar jam menjadi satu halaman penuh (Full Screen)"
+              <button type="button" onclick="toggleClockExpand(true)" title="Klik untuk memperbesar jam menjadi satu halaman penuh"
                 class="mt-2.5 inline-flex items-center gap-2.5 pl-3 pr-2.5 py-1.5 rounded-full bg-slate-50/90 dark:bg-slate-800/70 hover:bg-brand-50/80 dark:hover:bg-brand-950/60 border border-slate-200/90 dark:border-white/10 hover:border-brand-300 dark:hover:border-brand-500/40 shadow-xs backdrop-blur-md text-left transition-all duration-200 group active:scale-[0.98]">
                 <span class="relative flex h-2 w-2 shrink-0">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
@@ -722,25 +657,13 @@
       lucide.createIcons();
     }
 
-    // ================= 2 PENGHITUNG DURASI (START / PAUSE / STOP / RESET) =================
-    const swTimers = {
-      1: {
-        state: "idle", // "idle" | "running" | "paused" | "stopped"
-        accumulatedMs: 0,
-        lastResumeTimestamp: null,
-        firstStartTime: null,
-        stopTime: null,
-        intervalId: null
-      },
-      2: {
-        state: "idle",
-        accumulatedMs: 0,
-        lastResumeTimestamp: null,
-        firstStartTime: null,
-        stopTime: null,
-        intervalId: null
-      }
-    };
+    // ================= PENGHITUNG DURASI (START / PAUSE / STOP / RESET) =================
+    let swState = "idle"; // "idle" | "running" | "paused" | "stopped"
+    let swAccumulatedMs = 0;
+    let swLastResumeTimestamp = null;
+    let swFirstStartTime = null;
+    let swStopTime = null;
+    let swTimerInterval = null;
 
     function formatClockHHMM(dateObj) {
       if (!dateObj) return "--:--";
@@ -757,7 +680,7 @@
       return `${hh}:${mm}:${ss}`;
     }
 
-    function formatDurationHuman(totalMs) {
+    function formatDurationHuman(totalMs, startDate, endDate) {
       const totalSeconds = Math.floor(totalMs / 1000);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -777,39 +700,34 @@
       return parts.join(" ");
     }
 
-    function getCurrentElapsedMs(id) {
-      const t = swTimers[id];
-      if (!t) return 0;
-      if (t.state === "running" && t.lastResumeTimestamp) {
-        return t.accumulatedMs + (Date.now() - t.lastResumeTimestamp);
+    function getCurrentElapsedMs() {
+      if (swState === "running" && swLastResumeTimestamp) {
+        return swAccumulatedMs + (Date.now() - swLastResumeTimestamp);
       }
-      return t.accumulatedMs;
+      return swAccumulatedMs;
     }
 
-    function renderDurationTimerUI(id) {
-      const t = swTimers[id];
-      if (!t) return;
-
-      const elapsedMs = getCurrentElapsedMs(id);
+    function renderDurationTimerUI() {
+      const elapsedMs = getCurrentElapsedMs();
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
       const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
       const ss = String(totalSeconds % 60).padStart(2, "0");
 
-      const displayEl = document.getElementById(`swElapsedDisplay${id}`);
-      const summaryEl = document.getElementById(`swHumanSummary${id}`);
-      const logDetailEl = document.getElementById(`swLogDetail${id}`);
-      const startLabelEl = document.getElementById(`swStartTimeLabel${id}`);
-      const endLabelEl = document.getElementById(`swEndTimeLabel${id}`);
+      const displayEl = document.getElementById("swElapsedDisplay");
+      const summaryEl = document.getElementById("swHumanSummary");
+      const logDetailEl = document.getElementById("swLogDetail");
+      const startLabelEl = document.getElementById("swStartTimeLabel");
+      const endLabelEl = document.getElementById("swEndTimeLabel");
 
-      const startBtn = document.getElementById(`swStartBtn${id}`);
-      const pauseBtn = document.getElementById(`swPauseBtn${id}`);
-      const stopBtn = document.getElementById(`swStopBtn${id}`);
-      const resetBtn = document.getElementById(`swResetBtn${id}`);
+      const startBtn = document.getElementById("swStartBtn");
+      const pauseBtn = document.getElementById("swPauseBtn");
+      const stopBtn = document.getElementById("swStopBtn");
+      const resetBtn = document.getElementById("swResetBtn");
 
       if (displayEl) displayEl.textContent = `${hh}:${mm}:${ss}`;
 
-      if (t.state === "idle") {
+      if (swState === "idle") {
         if (summaryEl) {
           summaryEl.textContent = "";
           summaryEl.classList.add("hidden");
@@ -819,33 +737,33 @@
         if (pauseBtn) pauseBtn.disabled = true;
         if (stopBtn) stopBtn.disabled = true;
         if (resetBtn) resetBtn.disabled = true;
-      } else if (t.state === "running") {
+      } else if (swState === "running") {
         if (summaryEl) {
           summaryEl.classList.remove("hidden");
           summaryEl.textContent = `Berjalan: ${formatDurationHuman(elapsedMs)}`;
         }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
-        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(t.firstStartTime)} (${formatClockHHMMSS(t.firstStartTime)})`;
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)} (${formatClockHHMMSS(swFirstStartTime)})`;
         if (endLabelEl) endLabelEl.textContent = "Selesai: Berjalan...";
         if (startBtn) startBtn.disabled = true;
         if (pauseBtn) pauseBtn.disabled = false;
         if (stopBtn) stopBtn.disabled = false;
         if (resetBtn) resetBtn.disabled = false;
-      } else if (t.state === "paused") {
+      } else if (swState === "paused") {
         if (summaryEl) {
           summaryEl.classList.remove("hidden");
           summaryEl.textContent = `Dijeda pada: ${formatDurationHuman(elapsedMs)}`;
         }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
-        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(t.firstStartTime)}`;
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
         if (endLabelEl) endLabelEl.textContent = "Status: Pause";
         if (startBtn) startBtn.disabled = false;
         if (pauseBtn) pauseBtn.disabled = true;
         if (stopBtn) stopBtn.disabled = false;
         if (resetBtn) resetBtn.disabled = false;
-      } else if (t.state === "stopped") {
-        const diffClockMins = (t.firstStartTime && t.stopTime)
-          ? Math.max(0, Math.round((t.stopTime.getTime() - t.firstStartTime.getTime()) / 60000))
+      } else if (swState === "stopped") {
+        const diffClockMins = (swFirstStartTime && swStopTime)
+          ? Math.max(0, Math.round((swStopTime.getTime() - swFirstStartTime.getTime()) / 60000))
           : Math.round(elapsedMs / 60000);
         const exactHuman = formatDurationHuman(elapsedMs);
         const resultText = (diffClockMins > 0 && exactHuman !== `${diffClockMins} menit`)
@@ -857,8 +775,8 @@
           summaryEl.textContent = resultText;
         }
         if (logDetailEl) logDetailEl.classList.remove("hidden");
-        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(t.firstStartTime)}`;
-        if (endLabelEl) endLabelEl.textContent = `Selesai: ${formatClockHHMM(t.stopTime)}`;
+        if (startLabelEl) startLabelEl.textContent = `Mulai: ${formatClockHHMM(swFirstStartTime)}`;
+        if (endLabelEl) endLabelEl.textContent = `Selesai: ${formatClockHHMM(swStopTime)}`;
         if (startBtn) startBtn.disabled = false;
         if (pauseBtn) pauseBtn.disabled = true;
         if (stopBtn) stopBtn.disabled = true;
@@ -866,59 +784,53 @@
       }
     }
 
-    function startDurationTimer(id = 1) {
-      const t = swTimers[id];
-      if (!t) return;
+    function startDurationTimer() {
       const now = new Date();
-      if (t.state === "idle" || t.state === "stopped") {
-        t.accumulatedMs = 0;
-        t.firstStartTime = now;
-        t.stopTime = null;
+      if (swState === "idle" || swState === "stopped") {
+        swAccumulatedMs = 0;
+        swFirstStartTime = now;
+        swStopTime = null;
       }
-      t.state = "running";
-      t.lastResumeTimestamp = Date.now();
+      swState = "running";
+      swLastResumeTimestamp = Date.now();
 
-      if (t.intervalId) clearInterval(t.intervalId);
-      t.intervalId = setInterval(() => renderDurationTimerUI(id), 250);
-      renderDurationTimerUI(id);
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      swTimerInterval = setInterval(renderDurationTimerUI, 250);
+      renderDurationTimerUI();
     }
 
-    function pauseDurationTimer(id = 1) {
-      const t = swTimers[id];
-      if (!t || t.state !== "running") return;
-      t.accumulatedMs += Date.now() - t.lastResumeTimestamp;
-      t.lastResumeTimestamp = null;
-      t.state = "paused";
+    function pauseDurationTimer() {
+      if (swState !== "running") return;
+      swAccumulatedMs += Date.now() - swLastResumeTimestamp;
+      swLastResumeTimestamp = null;
+      swState = "paused";
 
-      if (t.intervalId) clearInterval(t.intervalId);
-      renderDurationTimerUI(id);
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      renderDurationTimerUI();
     }
 
-    function stopDurationTimer(id = 1) {
-      const t = swTimers[id];
-      if (!t || (t.state !== "running" && t.state !== "paused")) return;
-      if (t.state === "running" && t.lastResumeTimestamp) {
-        t.accumulatedMs += Date.now() - t.lastResumeTimestamp;
+    function stopDurationTimer() {
+      if (swState !== "running" && swState !== "paused") return;
+      if (swState === "running" && swLastResumeTimestamp) {
+        swAccumulatedMs += Date.now() - swLastResumeTimestamp;
       }
-      t.lastResumeTimestamp = null;
-      t.stopTime = new Date();
-      t.state = "stopped";
+      swLastResumeTimestamp = null;
+      swStopTime = new Date();
+      swState = "stopped";
 
-      if (t.intervalId) clearInterval(t.intervalId);
-      renderDurationTimerUI(id);
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      renderDurationTimerUI();
     }
 
-    function resetDurationTimer(id = 1) {
-      const t = swTimers[id];
-      if (!t) return;
-      if (t.intervalId) clearInterval(t.intervalId);
-      t.intervalId = null;
-      t.state = "idle";
-      t.accumulatedMs = 0;
-      t.lastResumeTimestamp = null;
-      t.firstStartTime = null;
-      t.stopTime = null;
-      renderDurationTimerUI(id);
+    function resetDurationTimer() {
+      if (swTimerInterval) clearInterval(swTimerInterval);
+      swTimerInterval = null;
+      swState = "idle";
+      swAccumulatedMs = 0;
+      swLastResumeTimestamp = null;
+      swFirstStartTime = null;
+      swStopTime = null;
+      renderDurationTimerUI();
     }
 
     // ================= PASARAN JAWA & TANGGAL HIJRIAH =================
@@ -1003,70 +915,20 @@
       if (expSecEl) expSecEl.textContent = `:${ss}`;
     }
 
-    // ================= NATIVE FULLSCREEN API CONTROLLER =================
-    async function enterBrowserFullscreen() {
-      const elem = document.documentElement;
-      try {
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-          if (elem.requestFullscreen) {
-            await elem.requestFullscreen();
-          } else if (elem.webkitRequestFullscreen) {
-            await elem.webkitRequestFullscreen();
-          } else if (elem.msRequestFullscreen) {
-            await elem.msRequestFullscreen();
-          }
-        }
-      } catch (err) {
-        console.warn("Fullscreen API tidak diizinkan atau tidak didukung:", err);
-      }
-    }
-
-    async function exitBrowserFullscreen() {
-      try {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) {
-            await document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            await document.webkitExitFullscreen();
-          } else if (document.msExitFullscreen) {
-            await document.msExitFullscreen();
-          }
-        }
-      } catch (err) {
-        console.warn("Gagal keluar dari Fullscreen API:", err);
-      }
-    }
-
     function toggleClockExpand(open) {
       const modal = document.getElementById("clockExpandModal");
       if (!modal) return;
       if (open) {
         updateLiveClock();
-        renderDurationTimerUI(1);
-        renderDurationTimerUI(2);
+        renderDurationTimerUI();
         modal.classList.remove("hidden");
         document.body.classList.add("overflow-hidden");
         lucide.createIcons();
-        enterBrowserFullscreen();
       } else {
         modal.classList.add("hidden");
         document.body.classList.remove("overflow-hidden");
-        exitBrowserFullscreen();
       }
     }
-
-    // Sinkronisasi otomatis jika user keluar dari Fullscreen lewat tombol ESC bawaan browser
-    function handleFullscreenChange() {
-      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-      const modal = document.getElementById("clockExpandModal");
-      if (!isFs && modal && !modal.classList.contains("hidden")) {
-        modal.classList.add("hidden");
-        document.body.classList.remove("overflow-hidden");
-      }
-    }
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
@@ -1926,9 +1788,7 @@
     function lockApp() {
       if (pollingInterval) clearInterval(pollingInterval);
       if (clockInterval) clearInterval(clockInterval);
-      if (swTimers[1].intervalId) clearInterval(swTimers[1].intervalId);
-      if (swTimers[2].intervalId) clearInterval(swTimers[2].intervalId);
-      exitBrowserFullscreen();
+      if (swTimerInterval) clearInterval(swTimerInterval);
       sessionStorage.removeItem(SESSION_KEY_STORAGE);
       activeAccessKey = "";
       agendas = {};
